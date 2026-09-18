@@ -133,3 +133,4 @@ Detalle completo en Swagger UI.
 - Hashear la clave del admin (hoy comparación directa; el `PasswordEncoder` ya está registrado).
 - Conectar el frontend Angular (reemplazar los services de `localStorage` por `HttpClient`).
 - Deploy / perfil de producción.
+# backend-saas
