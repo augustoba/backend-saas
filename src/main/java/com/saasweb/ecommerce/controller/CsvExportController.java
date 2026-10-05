@@ -8,7 +8,7 @@ import com.saasweb.ecommerce.model.MarketingSend;
 import com.saasweb.ecommerce.model.Order;
 import com.saasweb.ecommerce.model.OrderStatus;
 import com.saasweb.ecommerce.model.Product;
-import com.saasweb.ecommerce.model.SizeStock;
+import com.saasweb.ecommerce.model.Variante;
 import com.saasweb.ecommerce.repository.MarketingSendRepository;
 import com.saasweb.ecommerce.service.ExchangeService;
 import com.saasweb.ecommerce.service.OrderService;
@@ -56,7 +56,7 @@ public class CsvExportController {
         Csv csv = Csv.withHeader("Nombre", "Precio", "Stock total", "Stock por talle",
                 "Proveedor", "Costo", "Estado", "Rango de edad");
         for (Product p : products.findAll()) {
-            int total = p.getSizeStocks().stream().mapToInt(SizeStock::getStock).sum();
+            int total = p.getSizeStocks().stream().mapToInt(Variante::getStock).sum();
             String perSize = p.getSizeStocks().stream()
                     .map(s -> s.getSize() + ":" + s.getStock())
                     .reduce((a, b) -> a + " " + b).orElse("");

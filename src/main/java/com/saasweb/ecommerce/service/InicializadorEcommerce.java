@@ -18,7 +18,7 @@ import com.saasweb.ecommerce.repository.ProductRepository;
 import com.saasweb.core.dto.TenantAdminDtos.TenantCreateRequest;
 import com.saasweb.ecommerce.model.SizeScale;
 import com.saasweb.ecommerce.repository.SizeScaleRepository;
-import com.saasweb.ecommerce.model.SizeStock;
+import com.saasweb.ecommerce.model.Variante;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -305,18 +305,18 @@ public class InicializadorEcommerce implements InicializadorDeSistema {
         return set;
     }
 
-    private List<SizeStock> stocks(String scaleId, String... pairs) {
-        List<SizeStock> list = new ArrayList<>();
+    private List<Variante> stocks(String scaleId, String... pairs) {
+        List<Variante> list = new ArrayList<>();
         for (String pair : pairs) {
             String[] parts = pair.split(":");
-            list.add(new SizeStock(parts[0], Integer.parseInt(parts[1])));
+            list.add(new Variante(parts[0], Integer.parseInt(parts[1])));
         }
         return list;
     }
 
     private void product(String tenantId, String name, String description, String price,
                          String sizeScaleId, String emoji, String color,
-                         Set<ProductParam> params, List<SizeStock> stocks) {
+                         Set<ProductParam> params, List<Variante> stocks) {
         product(tenantId, name, description, price, sizeScaleId, RubroImages.productIcon(emoji, color), params, stocks);
     }
 
@@ -332,7 +332,7 @@ public class InicializadorEcommerce implements InicializadorDeSistema {
      */
     private void product(String tenantId, String name, String description, String price,
                          String sizeScaleId, String imageUrl,
-                         Set<ProductParam> params, List<SizeStock> stocks) {
+                         Set<ProductParam> params, List<Variante> stocks) {
         Product p = new Product();
         p.setId(UUID.randomUUID().toString());
         p.setTenantId(tenantId);

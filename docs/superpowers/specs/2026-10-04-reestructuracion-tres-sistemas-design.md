@@ -282,8 +282,19 @@ actualiza esta sección.
       cambia el nombre de la tabla. Verificado: 13 respuestas de la API (catálogo,
       settings, roles, usuarios, gastos, proveedores, cupones, bloques, movimientos
       de stock) idénticas antes y después; la base ya no tiene tablas sin prefijo.
-- [ ] **2.2b** Talle → variante (`ec_variante`, escalas de variantes, la línea del
-      pedido apunta a la variante) — cambia API y front
+- [x] **2.2b** Talle → variante (V10): `ec_variante` con id propio, nombre, stock,
+      código de barras opcional y posición (las 62 filas de talle migradas, cada
+      una con su id); escalas → `ec_escala_variante(_valor)`. `Product` tiene las
+      variantes como entidades (`@OneToMany`) y guardar el producto **fusiona por
+      nombre** (`reemplazarVariantes`): las existentes conservan id y código de
+      barras. API sin cambios (`sizeStocks[].size/stock`); `Variante.getSize()` es
+      un alias que se va con 2.2c.
+      Verificado contra MySQL: 13 respuestas idénticas; pedido confirmado descuenta
+      el stock de la variante; editar el producto conserva el código de barras.
+      VarianteTest. 52/52.
+- [ ] **2.2c** API y front hablan de "variantes": código de barras por variante en
+      el formulario de producto y en el lector del POS; la línea del pedido apunta
+      al id de la variante; "edad" pasa a ser una parametría
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -318,4 +329,5 @@ actualiza esta sección.
 | 2026-10-04 | 1g: panel según el sistema, dominios, asistente con sistema + admin | front `3e4f873` |
 | 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back `ace29d1`, front `70bbb68` |
 | 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back `f3689f5` |
-| 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back (ver git log) |
+| 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back `03eea7e` |
+| 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back (ver git log) |

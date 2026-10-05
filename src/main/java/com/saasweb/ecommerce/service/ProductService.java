@@ -15,7 +15,7 @@ import com.saasweb.ecommerce.dto.ProductDtos.SizeStockDto;
 import com.saasweb.ecommerce.model.Product;
 import com.saasweb.ecommerce.model.ProductParam;
 import com.saasweb.ecommerce.model.OrderStatus;
-import com.saasweb.ecommerce.model.SizeStock;
+import com.saasweb.ecommerce.model.Variante;
 import com.saasweb.ecommerce.repository.OrderRepository;
 import com.saasweb.ecommerce.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -185,7 +185,7 @@ public class ProductService {
         p.setCreatedAt(Instant.now());
         apply(p, req);
         Product saved = repo.save(p);
-        for (SizeStock s : saved.getSizeStocks()) {
+        for (Variante s : saved.getSizeStocks()) {
             if (s.getStock() > 0) {
                 recordMovement(tenantId, saved.getId(), saved.getName(), s.getSize(), s.getStock(),
                         StockMovementReason.ALTA_INICIAL, null, null, null, createdByDni);
@@ -236,8 +236,8 @@ public class ProductService {
         copy.setCostPrice(src.getCostPrice());
         copy.setIvaRate(src.getIvaRate());
         copy.setLowStockThreshold(src.getLowStockThreshold());
-        for (SizeStock s : src.getSizeStocks()) {
-            copy.getSizeStocks().add(new SizeStock(s.getSize(), 0));
+        for (Variante s : src.getSizeStocks()) {
+            copy.getSizeStocks().add(new Variante(s.getSize(), 0));
         }
         for (ProductParam pp : src.getParams()) {
             copy.getParams().add(new ProductParam(pp.getGroupId(), pp.getOptionId()));
@@ -281,15 +281,15 @@ public class ProductService {
         Product p = get(id);
         int clamped = Math.max(0, stock);
         int before = p.getSizeStocks().stream()
-                .filter(s -> s.getSize().equals(size)).mapToInt(SizeStock::getStock).findFirst().orElse(0);
+                .filter(s -> s.getSize().equals(size)).mapToInt(Variante::getStock).findFirst().orElse(0);
         boolean found = false;
-        for (SizeStock s : p.getSizeStocks()) {
+        for (Variante s : p.getSizeStocks()) {
             if (s.getSize().equals(size)) {
                 s.setStock(clamped);
                 found = true;
             }
         }
-        if (!found) p.getSizeStocks().add(new SizeStock(size, clamped));
+        if (!found) p.getSizeStocks().add(new Variante(size, clamped));
         Product saved = repo.save(p);
         recordMovement(p.getTenantId(), id, p.getName(), size, clamped - before,
                 StockMovementReason.AJUSTE_MANUAL, note, null, null, createdByDni);
@@ -301,8 +301,8 @@ public class ProductService {
                                String referenceId, String createdByDni) {
         repo.findByIdAndTenantId(id, TenantContext.getTenantId()).ifPresent(p -> {
             int before = p.getSizeStocks().stream()
-                    .filter(s -> s.getSize().equals(size)).mapToInt(SizeStock::getStock).findFirst().orElse(0);
-            for (SizeStock s : p.getSizeStocks()) {
+                    .filter(s -> s.getSize().equals(size)).mapToInt(Variante::getStock).findFirst().orElse(0);
+            for (Variante s : p.getSizeStocks()) {
                 if (s.getSize().equals(size)) {
                     s.setStock(Math.max(0, s.getStock() - quantity));
                 }
@@ -318,13 +318,13 @@ public class ProductService {
                                String referenceId, BigDecimal unitCost, String createdByDni) {
         repo.findByIdAndTenantId(id, TenantContext.getTenantId()).ifPresent(p -> {
             boolean found = false;
-            for (SizeStock s : p.getSizeStocks()) {
+            for (Variante s : p.getSizeStocks()) {
                 if (s.getSize().equals(size)) {
                     s.setStock(Math.max(0, s.getStock() + quantity));
                     found = true;
                 }
             }
-            if (!found && quantity > 0) p.getSizeStocks().add(new SizeStock(size, quantity));
+            if (!found && quantity > 0) p.getSizeStocks().add(new Variante(size, quantity));
             repo.save(p);
             if (quantity > 0) {
                 recordMovement(p.getTenantId(), id, p.getName(), size, quantity, reason, null, referenceId, unitCost, createdByDni);
@@ -347,7 +347,7 @@ public class ProductService {
             throw new BadRequestException("El costo unitario tiene que ser mayor a 0.");
         }
         Product p = get(id);
-        int stockActual = p.getSizeStocks().stream().mapToInt(SizeStock::getStock).sum();
+        int stockActual = p.getSizeStocks().stream().mapToInt(Variante::getStock).sum();
         BigDecimal costoActual = p.getCostPrice();
         BigDecimal nuevoCosto;
         if (costoActual == null || stockActual <= 0) {
@@ -388,7 +388,7 @@ public class ProductService {
         return repo.findByIdAndTenantId(id, TenantContext.getTenantId())
                 .map(p -> p.getSizeStocks().stream()
                         .filter(s -> s.getSize().equals(size))
-                        .mapToInt(SizeStock::getStock)
+                        .mapToInt(Variante::getStock)
                         .findFirst().orElse(0))
                 .orElse(0);
     }
@@ -417,12 +417,13 @@ public class ProductService {
         p.setLowStockThreshold(
                 req.lowStockThreshold() != null && req.lowStockThreshold() >= 0 ? req.lowStockThreshold() : null);
 
-        p.getSizeStocks().clear();
+        List<Variante> variantes = new ArrayList<>();
         if (req.sizeStocks() != null) {
             for (SizeStockDto s : req.sizeStocks()) {
-                p.getSizeStocks().add(new SizeStock(s.size(), Math.max(0, s.stock())));
+                variantes.add(new Variante(s.size(), Math.max(0, s.stock())));
             }
         }
+        p.reemplazarVariantes(variantes);
 
         p.getParams().clear();
         if (req.params() != null) {

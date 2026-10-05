@@ -108,10 +108,11 @@ public class Product {
      */
     private Integer lowStockThreshold;
 
-    @ElementCollection
-    @CollectionTable(name = "ec_producto_talle_stock", joinColumns = @JoinColumn(name = "product_id"))
-    @OrderColumn(name = "idx")
-    private List<SizeStock> sizeStocks = new ArrayList<>();
+    /** Variantes vendibles (talles, medidas…), en el orden en que se muestran. */
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "product_id", nullable = false)
+    @OrderColumn(name = "posicion")
+    private List<Variante> sizeStocks = new ArrayList<>();
 
     @ElementCollection
     @CollectionTable(name = "ec_producto_param", joinColumns = @JoinColumn(name = "product_id"))
@@ -267,12 +268,36 @@ public class Product {
         this.lowStockThreshold = lowStockThreshold;
     }
 
-    public List<SizeStock> getSizeStocks() {
+    public List<Variante> getSizeStocks() {
         return sizeStocks;
     }
 
-    public void setSizeStocks(List<SizeStock> sizeStocks) {
-        this.sizeStocks = sizeStocks;
+    /** Reemplaza el contenido (la colección la maneja Hibernate: no se cambia la referencia). */
+    public void setSizeStocks(List<Variante> sizeStocks) {
+        this.sizeStocks.clear();
+        this.sizeStocks.addAll(sizeStocks);
+    }
+
+    /**
+     * Deja exactamente estas variantes, en este orden, conservando las que ya
+     * existían con el mismo nombre (mantienen su id y su código de barras): así
+     * editar el stock o el orden no borra y recrea todo.
+     */
+    public void reemplazarVariantes(List<Variante> nuevas) {
+        java.util.Map<String, Variante> actuales = new java.util.HashMap<>();
+        for (Variante v : sizeStocks) actuales.put(v.getNombre(), v);
+        List<Variante> resultado = new ArrayList<>();
+        for (Variante n : nuevas) {
+            Variante existente = actuales.remove(n.getNombre());
+            if (existente != null) {
+                existente.setStock(n.getStock());
+                resultado.add(existente);
+            } else {
+                resultado.add(n);
+            }
+        }
+        sizeStocks.clear();
+        sizeStocks.addAll(resultado);
     }
 
     public Set<ProductParam> getParams() {

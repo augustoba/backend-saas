@@ -12,7 +12,7 @@ import com.saasweb.ecommerce.dto.MetricsDtos.Totals;
 import com.saasweb.ecommerce.model.Order;
 import com.saasweb.ecommerce.model.OrderStatus;
 import com.saasweb.ecommerce.model.Product;
-import com.saasweb.ecommerce.model.SizeStock;
+import com.saasweb.ecommerce.model.Variante;
 import com.saasweb.ecommerce.repository.OrderRepository;
 import com.saasweb.ecommerce.repository.ProductRepository;
 import org.springframework.stereotype.Service;
@@ -106,7 +106,7 @@ public class DashboardService {
         for (Product p : productRepo.findByTenantIdAndActiveTrueAndDeletedFalseOrderByCreatedAtDesc(TenantContext.getTenantId())) {
             if (p.isDiscontinued()) continue; // el dueño/a marcó "no reponer"
             int threshold = p.getLowStockThreshold() != null ? p.getLowStockThreshold() : DEFAULT_LOW_STOCK;
-            for (SizeStock s : p.getSizeStocks()) {
+            for (Variante s : p.getSizeStocks()) {
                 if (s.getStock() <= threshold) {
                     items.add(new LowStockItem(p.getId(), p.getName(), s.getSize(), s.getStock(), threshold));
                 }

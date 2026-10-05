@@ -438,7 +438,7 @@ public class OrderService {
             int available = productRepo.findByIdAndTenantId(l.getProductId(), order.getTenantId())
                     .map(p -> p.getSizeStocks().stream()
                             .filter(s -> s.getSize().equals(l.getSize()))
-                            .mapToInt(com.saasweb.ecommerce.model.SizeStock::getStock)
+                            .mapToInt(com.saasweb.ecommerce.model.Variante::getStock)
                             .findFirst().orElse(0))
                     .orElse(0);
             if (available < l.getQuantity()) {

@@ -18,7 +18,7 @@ import com.saasweb.ecommerce.repository.SiteSettingsRepository;
 import com.saasweb.core.service.RubroImages;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.ecommerce.model.SizeScale;
-import com.saasweb.ecommerce.model.SizeStock;
+import com.saasweb.ecommerce.model.Variante;
 import com.saasweb.ecommerce.repository.DiscountRepository;
 import com.saasweb.ecommerce.repository.ParamRepository;
 import com.saasweb.ecommerce.repository.ProductRepository;
@@ -350,7 +350,7 @@ public class SeedEcommerce implements CommandLineRunner {
 
     private Product product(String tenantId, String name, String description, String price, String ageRange,
                             String sizeScaleId, String emoji, String color,
-                            Set<ProductParam> params, List<SizeStock> stocks) {
+                            Set<ProductParam> params, List<Variante> stocks) {
         Product p = new Product();
         p.setId(UUID.randomUUID().toString());
         p.setTenantId(tenantId);
@@ -376,11 +376,11 @@ public class SeedEcommerce implements CommandLineRunner {
         return set;
     }
 
-    private List<SizeStock> stocks(String... pairs) {
-        List<SizeStock> list = new ArrayList<>();
+    private List<Variante> stocks(String... pairs) {
+        List<Variante> list = new ArrayList<>();
         for (String pair : pairs) {
             String[] parts = pair.split(":");
-            list.add(new SizeStock(parts[0], Integer.parseInt(parts[1])));
+            list.add(new Variante(parts[0], Integer.parseInt(parts[1])));
         }
         return list;
     }
