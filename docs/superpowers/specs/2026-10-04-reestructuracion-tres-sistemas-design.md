@@ -556,4 +556,4 @@ actualiza esta sección.
 | 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back `1ce9b45`, front `24e14ea` |
 | 2026-10-05 | 4a: backend del restaurante portado sobre el núcleo (V18, V19) | back `5993a46` |
 | 2026-10-05 | 4b: front del restaurante, carta en la raíz, arreglo de requests duplicados | back `2cab65d`, front `e1c0789` |
-| 2026-10-05 | 5a/5b: archivos y guía de despliegue (Caddy, systemd, backups, publicar) y prueba de carga | back (ver git log) |
+| 2026-10-05 | 5a/5b: archivos y guía de despliegue (Caddy, systemd, backups, publicar) y prueba de carga | back `8a66b86` |
