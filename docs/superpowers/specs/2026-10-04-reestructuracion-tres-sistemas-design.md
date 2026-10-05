@@ -162,11 +162,26 @@ cuando no hay filas en ⏳.
 Cada etapa: compila, tests en verde, prueba en navegador, commit, y se
 actualiza esta sección.
 
-### Etapa 0 — Preparación ⏳
-- [ ] Rama `reestructuracion` en back y front
-- [ ] Flyway (esquema versionado) en lugar de `ddl-auto: update`
-- [ ] Paquetes `core/ ecommerce/ pos/ restaurante/` y test ArchUnit de dependencias
-- [ ] Carpetas del front + regla de lint/imports equivalente
+### Etapa 0 — Preparación ✅ (2026-10-04)
+- [x] Rama `reestructuracion` en back y front
+- [x] Flyway en lugar de `ddl-auto: update`. **V1** = esquema previo exacto
+      (generado por Hibernate en una base vacía + `mysqldump --no-data`).
+      Hibernate pasa a `validate`. La rama usa la base **`saasweb_v2`**
+      (`DB_URL` la sobreescribe); `main` sigue con `saasweb`. Tests: H2 con
+      Flyway apagado (los scripts son SQL de MySQL).
+- [x] Paquetes `ecommerce/ pos/ restaurante/` (con `package-info.java`) y
+      `ArquitecturaTest` (ArchUnit). Verificado que detecta una violación real
+      (clase en `pos` usando `ecommerce` → falla).
+- [x] Front: `src/app/{ecommerce,pos,restaurante}/` + `scripts/check-arquitectura.mjs`
+      en `prebuild` (sin ESLint, sin dependencias). Verificado con una violación
+      de prueba.
+- Verificación: `mvn test` 37/37 (35 previos + 2 de arquitectura); el backend
+  arranca contra MySQL, Flyway aplica V1, Hibernate valida y la API responde
+  con el seed; `npm run build` pasa el chequeo y compila.
+- Nota: los paquetes del núcleo hoy siguen siendo `core/<feature>/` (por
+  funcionalidad). Se reordenan por capa en la Etapa 1, a medida que cada
+  parte se reescribe; el código del ecommerce que hoy vive en `core/` se muda
+  en la Etapa 2.
 
 ### Etapa 1 — Núcleo ⏳
 - [ ] `core_tenant` con sistema + `core_dominio` + resolución por Host
@@ -202,4 +217,5 @@ actualiza esta sección.
 | Fecha | Qué | Commits |
 |---|---|---|
 | 2026-10-04 | Fase 19: 20 diseños de Ruth en el SaaS (previo a la reestructuración) | back `a675938`, front `ce97e14` |
-| 2026-10-04 | Spec escrito | (este commit) |
+| 2026-10-04 | Spec escrito | back `672cbb7` |
+| 2026-10-04 | Etapa 0: Flyway (V1), paquetes por sistema, ArchUnit, chequeo de imports del front | back (este commit), front `958168b` |

@@ -2,12 +2,18 @@ spring:
   application:
     name: saasweb-backend
   datasource:
-    url: jdbc:mysql://localhost:3306/saasweb?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false
+    # Base nueva de la reestructuración (main sigue usando `saasweb`).
+    url: ${DB_URL:jdbc:mysql://localhost:3306/saasweb_v2?createDatabaseIfNotExist=true&serverTimezone=UTC&allowPublicKeyRetrieval=true&useSSL=false}
     username: ${DB_USER:root}
     password: ${DB_PASSWORD:root}
+  # El esquema lo maneja Flyway (src/main/resources/db/migration). Hibernate
+  # sólo valida: si una entidad no coincide con la base, el arranque falla en
+  # vez de "arreglarla" en silencio.
+  flyway:
+    enabled: true
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     # OSIV activado (default de Spring Boot): permite mapear entidades a DTO en el
     # controller sin LazyInitializationException. A futuro: proyecciones DTO en el
     # service y desactivar esto.

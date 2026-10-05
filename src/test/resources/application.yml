@@ -4,6 +4,10 @@ spring:
     driver-class-name: org.h2.Driver
     username: sa
     password: ""
+  # Los tests usan H2 en memoria con el esquema de las entidades: los scripts
+  # de Flyway son SQL de MySQL.
+  flyway:
+    enabled: false
   jpa:
     hibernate:
       ddl-auto: create-drop
