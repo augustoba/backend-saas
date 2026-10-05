@@ -1,5 +1,3 @@
-| 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
-| 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back (este commit) |
 # Reestructuración: un SaaS, tres sistemas (Ecommerce · POS · Restaurante)
 
 > Spec + registro de avance. Se actualiza al cerrar cada punto (qué se hizo,
@@ -231,4 +229,6 @@ actualiza esta sección.
 |---|---|---|
 | 2026-10-04 | Fase 19: 20 diseños de Ruth en el SaaS (previo a la reestructuración) | back `a675938`, front `ce97e14` |
 | 2026-10-04 | Spec escrito | back `672cbb7` |
-| 2026-10-04 | Etapa 0: Flyway (V1), paquetes por sistema, ArchUnit, chequeo de imports del front | back (este commit), front `958168b` |
+| 2026-10-04 | Etapa 0: Flyway (V1), paquetes por sistema, ArchUnit, chequeo de imports del front | back `c375799`, front `958168b` |
+| 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
+| 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back `5786850` |
