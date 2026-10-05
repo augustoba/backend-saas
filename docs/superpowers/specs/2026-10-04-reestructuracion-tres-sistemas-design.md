@@ -419,7 +419,17 @@ actualiza esta sección.
       de kiosco con códigos; `SeedPos` hace lo mismo con los POS existentes sin
       artículos ("Kiosco Prueba"); `LimpiezaPos` en la baja. El ecommerce deja de
       inicializar tiendas POS. PosArticulosTest (4), 64/64; V15 en MySQL.
-- [ ] **3b** Caja (apertura, movimientos, cierre con arqueo) y ventas con factura
+- [x] **3b** Caja y ventas (V16: `pos_caja`, `pos_movimiento_caja`, `pos_venta`,
+      `pos_venta_linea`): abrir caja con efectivo inicial (una sola abierta),
+      ingresos/egresos, cierre con arqueo (esperado = inicial + ventas en efectivo
+      + ingresos − egresos; guarda contado y diferencia), historial y resumen por
+      medio de pago. Ventas con número `V-0001`, efectivo con vuelto, tarjeta con
+      nº de ticket, transferencia y QR, importe suelto "varios" sin stock; descuenta
+      stock (puede quedar negativo). Factura por el núcleo si la tienda está en
+      "Factura ARCA" (si ARCA falla queda con el error y se reintenta); anular sólo
+      con la caja abierta, repone stock y emite la nota de crédito (si ARCA la
+      rechaza, no se anula). PosVentasTest (3: turno completo con arqueo, ARCA
+      simulado con reintento y NC, baja de la tienda). 67/67.
 - [ ] **3c** Gastos y proveedores
 - [ ] **3d** Pantallas del POS
 - [ ] Verificado: abrir caja, vender escaneando, facturar, cerrar con arqueo
@@ -458,4 +468,5 @@ actualiza esta sección.
 | 2026-10-05 | 2.4b: coordinar por WhatsApp tras MP, credenciales de Cloudinary, catálogo público sin datos internos ni galería (over-fetching) | back `c0184a2`, front `01ab41a` |
 | 2026-10-05 | Etapa 2: verificación de los 35 diseños (home, promos, ficha) | docs |
 | 2026-10-05 | Etapa 2: E2E de compra WhatsApp, venta en el local y cambio (MP y ARCA en vivo esperan credenciales de prueba) | docs, front `57a5f15` |
-| 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back (ver git log) |
+| 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back `a0b1b82` |
+| 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back (ver git log) |
