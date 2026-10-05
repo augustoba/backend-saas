@@ -430,7 +430,14 @@ actualiza esta sección.
       con la caja abierta, repone stock y emite la nota de crédito (si ARCA la
       rechaza, no se anula). PosVentasTest (3: turno completo con arqueo, ARCA
       simulado con reintento y NC, baja de la tienda). 67/67.
-- [ ] **3c** Gastos y proveedores
+- [x] **3c** Gastos, proveedores y reporte (V17: `pos_gasto`, `pos_proveedor`,
+      `pos_venta_linea.costo_unitario`): un gasto "pagado de la caja" genera el
+      egreso en la caja abierta (y borrarlo lo saca, salvo que la caja ya esté
+      cerrada); un proveedor con gastos no se borra. `GET /api/pos/reporte` (mes en
+      curso por defecto): vendido, costo de la mercadería (con el costo **al momento
+      de vender**), vendido sin costo cargado, ganancia bruta, gastos por categoría,
+      resultado, por medio de pago y los 10 más vendidos. PosGastosTest, 68/68;
+      V16 y V17 en MySQL.
 - [ ] **3d** Pantallas del POS
 - [ ] Verificado: abrir caja, vender escaneando, facturar, cerrar con arqueo
 
@@ -469,4 +476,5 @@ actualiza esta sección.
 | 2026-10-05 | Etapa 2: verificación de los 35 diseños (home, promos, ficha) | docs |
 | 2026-10-05 | Etapa 2: E2E de compra WhatsApp, venta en el local y cambio (MP y ARCA en vivo esperan credenciales de prueba) | docs, front `57a5f15` |
 | 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back `a0b1b82` |
-| 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back (ver git log) |
+| 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back `599b990` |
+| 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back (ver git log) |

@@ -104,6 +104,7 @@ public class VentaService {
                 l.setNombre(a.getNombre());
                 l.setPrecioUnitario(a.getPrecio());
                 l.setIva(a.getIva());
+                l.setCostoUnitario(a.getCosto());
             } else {
                 if (item.precio() == null || item.precio().signum() <= 0) {
                     throw new BadRequestException("Un importe suelto necesita un precio mayor a cero.");

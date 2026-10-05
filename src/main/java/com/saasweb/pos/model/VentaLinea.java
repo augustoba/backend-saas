@@ -29,6 +29,10 @@ public class VentaLinea {
     @Column(precision = 5, scale = 2)
     private BigDecimal iva;
 
+    /** Costo del artículo al vender (foto): da la ganancia real aunque después cambie el costo. */
+    @Column(precision = 12, scale = 2)
+    private BigDecimal costoUnitario;
+
     public BigDecimal subtotal() {
         return precioUnitario.multiply(BigDecimal.valueOf(cantidad));
     }
@@ -45,4 +49,6 @@ public class VentaLinea {
     public void setCantidad(int cantidad) { this.cantidad = cantidad; }
     public BigDecimal getIva() { return iva; }
     public void setIva(BigDecimal iva) { this.iva = iva; }
+    public BigDecimal getCostoUnitario() { return costoUnitario; }
+    public void setCostoUnitario(BigDecimal costoUnitario) { this.costoUnitario = costoUnitario; }
 }

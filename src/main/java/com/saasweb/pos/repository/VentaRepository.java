@@ -14,6 +14,7 @@ public interface VentaRepository extends JpaRepository<Venta, String> {
     List<Venta> findByTenantIdAndCajaIdOrderByFechaDesc(String tenantId, String cajaId);
     List<Venta> findByTenantIdOrderByFechaDesc(String tenantId, Pageable page);
     List<Venta> findByTenantId(String tenantId);
+    List<Venta> findByTenantIdAndFechaBetween(String tenantId, java.time.Instant desde, java.time.Instant hasta);
 
     @Query("select coalesce(max(v.numero), 0) from Venta v where v.tenantId = :tenantId")
     int ultimoNumero(@Param("tenantId") String tenantId);
