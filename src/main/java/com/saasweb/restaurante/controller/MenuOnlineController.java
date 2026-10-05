@@ -38,6 +38,12 @@ public class MenuOnlineController {
         this.menuOnlineService = menuOnlineService;
     }
 
+    /** La carta activa de la tienda del dominio (para que su dirección lleve directo a la carta). */
+    @GetMapping("/api/public/restaurante/carta")
+    public java.util.Map<String, String> cartaActual() {
+        return java.util.Map.of("slug", menuOnlineService.slugActivo());
+    }
+
     @GetMapping("/api/restaurante/menu-online/config")
     public ConfigResponse obtenerConfig() {
         return ConfigResponse.from(menuOnlineService.obtenerOCrear());

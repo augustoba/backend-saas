@@ -460,7 +460,7 @@ actualiza esta sección.
       simulado: falla, reintento con CAE, anulación con nota de crédito); en vivo
       espera credenciales de homologación, igual que el ecommerce.
 
-### Etapa 4 — Restaurante ⏳ (en curso)
+### Etapa 4 — Restaurante ✅
 - [x] **4a** Backend portado (130 clases de `C:\proyectos\restaurante` a
       `com.saasweb.restaurante.{controller,service,repository,model,dto}` con un script:
       paquetes por capa, `tenantId` = la tienda del núcleo (`TenantContext`), URLs
@@ -488,8 +488,23 @@ actualiza esta sección.
       - Verificado: RestauranteTest (alta sembrada → caja → mesa → pedido → cocina →
         cobro PAGADO → carta pública sólo por su dominio → otra tienda no ve sus
         órdenes → baja limpia), 69/69; contra MySQL las pantallas de La Parrilla responden.
-- [ ] **4b** Front del restaurante (`src/app/restaurante/`)
-- [ ] Verificado: comanda en mesa → KDS → cobro → factura; carta online y reservas
+- [x] **4b** Front del restaurante (front `e1c0789`, `src/app/restaurante/`): sus pantallas
+      con su estructura y tema oscuro bajo `/admin/restaurante/**`; `apiUrl` traduce sus
+      rutas `/v1` a las del SaaS; toasts, login, usuarios y roles son los del núcleo
+      (la pestaña de usuarios/roles se reemplazó por un acceso a "Usuarios y roles").
+      Carta pública `/carta/:slug` y autopedido `/mesa/:token` sin el marco de la
+      tienda online; `/` de un restaurante lleva a su carta (`GET /api/public/restaurante/carta`).
+      - **Arreglado (bug del proyecto original, sigue en `C:\proyectos\restaurante`):**
+        13 métodos de servicio se suscribían y además devolvían el mismo observable →
+        abrir mesa, agregar ítem, confirmar y **cobrar** salían dos veces (dos órdenes,
+        dos pagos; abrir mesa terminaba en deadlock de MySQL). Ahora un solo request
+        (`shareReplay`), y el backend bloquea la fila de la mesa al abrirla.
+- [x] Verificado en el navegador contra MySQL ("La Parrilla Prueba", sin errores de
+      consola): las 17 pantallas cargan; abrir caja ($20.000) → abrir mesa 2 → agregar
+      2 platos → confirmar → aparecen en Cocina → cobrar en efectivo → Ventas: 1 orden,
+      $12.300, efectivo. Carta pública por su dominio; `/` del restaurante → su carta,
+      del kiosco → login, del ecommerce → la tienda. Factura de ARCA del restaurante:
+      el original no facturaba; queda como mejora (el núcleo ya tiene `ComprobanteService`).
 
 ### Etapa 5 — Despliegue ⏳
 - [ ] VPS OVH + Caddy (on-demand TLS) + backups MySQL
@@ -525,4 +540,5 @@ actualiza esta sección.
 | 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back `599b990` |
 | 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back `81a4024` |
 | 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back `1ce9b45`, front `24e14ea` |
-| 2026-10-05 | 4a: backend del restaurante portado sobre el núcleo (V18, V19) | back (ver git log) |
+| 2026-10-05 | 4a: backend del restaurante portado sobre el núcleo (V18, V19) | back `5993a46` |
+| 2026-10-05 | 4b: front del restaurante, carta en la raíz, arreglo de requests duplicados | back (ver git log), front `e1c0789` |

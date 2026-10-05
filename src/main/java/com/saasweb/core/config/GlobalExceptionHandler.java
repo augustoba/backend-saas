@@ -35,6 +35,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), null);
     }
 
+    /** URL que no existe: 404, no 500. */
+    @ExceptionHandler(org.springframework.web.servlet.resource.NoResourceFoundException.class)
+    public ResponseEntity<ApiError> noResource(org.springframework.web.servlet.resource.NoResourceFoundException ex) {
+        return build(HttpStatus.NOT_FOUND, "No existe: /" + ex.getResourcePath(), null);
+    }
+
     /** Falta un parámetro obligatorio de la URL (ej: ?fecha=): es un error del pedido, no del servidor. */
     @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
     public ResponseEntity<ApiError> missingParam(org.springframework.web.bind.MissingServletRequestParameterException ex) {

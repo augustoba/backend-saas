@@ -58,7 +58,7 @@ public class OrdenService {
 
     @Transactional
     public Orden abrirMesa(Usuario usuario, AbrirMesaRequest request) {
-        Mesa mesa = mesaRepository.findByIdAndTenantId(request.mesaId(), tenantId())
+        Mesa mesa = mesaRepository.bloquear(request.mesaId(), tenantId())
                 .orElseThrow(() -> new ResourceNotFoundException("Mesa no encontrada"));
 
         ordenRepository.findAbiertaPorMesa(mesa.getId()).ifPresent(o -> {

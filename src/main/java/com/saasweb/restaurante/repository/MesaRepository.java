@@ -19,4 +19,13 @@ public interface MesaRepository extends JpaRepository<Mesa, Long> {
     @org.springframework.data.jpa.repository.Query(
             "select m from Mesa m where m.id = :id and m.salon.tenantId = :tenantId")
     Optional<Mesa> findByIdAndTenantId(Long id, String tenantId);
+
+    /**
+     * La mesa bloqueada hasta el fin de la transacción: dos aperturas a la vez
+     * (doble toque, dos mozos) quedan en fila en vez de chocar (deadlock).
+     */
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select m from Mesa m where m.id = :id and m.salon.tenantId = :tenantId")
+    Optional<Mesa> bloquear(@org.springframework.data.repository.query.Param("id") Long id,
+                            @org.springframework.data.repository.query.Param("tenantId") String tenantId);
 }

@@ -45,6 +45,13 @@ public class MenuOnlineService {
         this.zonaEnvioRepository = zonaEnvioRepository;
     }
 
+    /** Slug de la carta activa de la tienda actual; 404 si no tiene o está desactivada. */
+    public String slugActivo() {
+        return configRepository.findByTenantId(tenantId()).filter(MenuOnlineConfig::isActivo)
+                .map(MenuOnlineConfig::getSlug)
+                .orElseThrow(() -> new ResourceNotFoundException("Este restaurante no tiene la carta online activa."));
+    }
+
     public MenuOnlineConfig obtenerOCrear() {
         return configRepository.findByTenantId(tenantId()).orElseGet(() -> {
             MenuOnlineConfig config = new MenuOnlineConfig();

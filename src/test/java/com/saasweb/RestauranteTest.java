@@ -83,6 +83,9 @@ class RestauranteTest {
         mvc.perform(get("/api/public/restaurante/carta/" + slug).with(r -> { r.setServerName(resto.slug() + ".localhost"); return r; }))
                 .andExpect(status().isOk());
         mvc.perform(get("/api/public/restaurante/carta/" + slug)).andExpect(status().isNotFound());
+        // La dirección del restaurante sabe cuál es su carta (el front manda "/" ahí).
+        assertThat(json(mvc.perform(get("/api/public/restaurante/carta")
+                .with(r -> { r.setServerName(resto.slug() + ".localhost"); return r; }))).get("slug").asText()).isEqualTo(slug);
 
         // Otra tienda no ve los datos del restaurante.
         String body = mvc.perform(post("/api/auth/login").contentType(org.springframework.http.MediaType.APPLICATION_JSON)
