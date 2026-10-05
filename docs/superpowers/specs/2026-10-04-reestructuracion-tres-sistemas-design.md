@@ -152,10 +152,10 @@ cuando no hay filas en ⏳.
 | Banner promocional emergente | ✅ (2.4a) |
 | Página "Nosotros" + foto del local | ✅ (2.4a) |
 | WhatsApp flotante | ✅ (2.4a) |
-| "Coordinar por WhatsApp" tras pago aprobado | ⏳ |
+| "Coordinar por WhatsApp" tras pago aprobado | ✅ (2.4b) |
 | Título de pestaña "Página \| Tienda" | ✅ (2.4a) |
 | Medios de pago del local POSNET/Efectivo/Transferencia | ✅ (ya estaban en el SaaS, más completos; etiqueta "Efectivo" de Ruth) |
-| Auditoría de over-fetching del catálogo público | ⏳ |
+| Auditoría de over-fetching del catálogo público | ✅ (2.4b: DTOs públicos sin costo/proveedor/IVA/códigos, listado sin galería, entity graph, gzip; sin Cache-Control por el header de tenant demo) |
 
 ## 9. Etapas y avance
 
@@ -339,8 +339,31 @@ actualiza esta sección.
         aplicaban solos. Ahora es público y no depende del host.
       - Verificado: 55/55 (el test de Mercado Pago pasa por cobro → evento →
         pedido); V13 en MySQL; pedidos, dashboard y webhook responden.
-- [ ] Facturación y cobro vía núcleo
-- [ ] Paridad con Ruth (§8) sin pendientes
+- [x] **2.4a** Lo nuevo de Ruth (V14; back `98314ff`, front `9201944`):
+      devolución pura en Cambios; "Mostrar en promos" + vista `/promos`; ajuste
+      masivo de precio; borrado definitivo de archivados (borra las fotos de
+      Cloudinary si hay API Key/Secret); banner promocional; página "Nosotros" +
+      foto del local; WhatsApp flotante; título de pestaña con el nombre de la
+      tienda; etiqueta "Efectivo".
+      Verificado: ParidadRuthTest, 58/58; E2E contra MySQL (banner, WhatsApp,
+      títulos, /promos, /nosotros, +10% → $1.100, borrado definitivo → 404).
+- [x] **2.4b** Cierre de la paridad:
+      - "Coordinar entrega por WhatsApp" al volver de Mercado Pago con el pago
+        aprobado (`/mis-pedidos?code=…&pago=aprobado`: aviso, código precargado y botón).
+      - Cloudinary: API Key y API Secret en la pantalla del superadmin (el Secret
+        nunca vuelve al navegador; vacío = no cambiarlo).
+      - **Arreglado** (filtración, igual que en Ruth): el catálogo público usaba el
+        DTO del admin y exponía costo, proveedor, IVA y códigos de barras. Ahora
+        `PublicProductResponse` (detalle, con galería) y `PublicProductListResponse`
+        (listado, sin `images[]`; portada en una sola consulta); entity graph de
+        variantes y parametrías contra el N+1; gzip. La ficha pide la galería al detalle.
+        No se copió el `Cache-Control` de Ruth: con el header `X-Demo-Tenant` una
+        caché compartida podría mezclar tiendas.
+      - Verificado: 60/60; listado público 25,4 KB → 14,8 KB (2,3 KB con gzip);
+        E2E: ficha con galería completa, vuelta de MP con botón de WhatsApp,
+        pantalla de Cloudinary; sin errores de consola.
+- [x] Facturación y cobro vía núcleo (2.3b)
+- [x] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
 - [ ] Verificado: compra WhatsApp y MP, venta en local, cambio, factura ARCA de prueba
 
@@ -379,3 +402,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back `062bc55`, front `696efb7` |
 | 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back `99a9dcc` |
 | 2026-10-05 | 2.4a: lo nuevo de Ruth — devolución pura, promos, ajuste masivo, borrado definitivo, banner, Nosotros, WhatsApp flotante, título de pestaña (V14) | back `98314ff` + docs, front `9201944` |
+| 2026-10-05 | 2.4b: coordinar por WhatsApp tras MP, credenciales de Cloudinary, catálogo público sin datos internos ni galería (over-fetching) | back (ver git log), front (ver git log) |

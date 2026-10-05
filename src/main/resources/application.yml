@@ -29,6 +29,12 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+  # Gzip de las respuestas JSON (el catálogo público baja mucho). Con Caddy adelante también
+  # se puede comprimir ahí; acá queda para que funcione igual sin proxy.
+  compression:
+    enabled: true
+    mime-types: application/json
+    min-response-size: 1KB
 
 springdoc:
   swagger-ui:

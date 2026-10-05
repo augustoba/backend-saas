@@ -25,7 +25,18 @@ public interface ProductRepository extends JpaRepository<Product, String> {
 
     /** Borra los productos del tenant (y sus colecciones @ElementCollection) — ver TenantDeletionService. */
     void deleteAllByTenantId(String tenantId);
+    /** Listado público y alertas de stock: variantes y parametrías en la misma consulta (sin N+1). */
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"sizeStocks", "params"})
     List<Product> findByTenantIdAndActiveTrueAndDeletedFalseOrderByCreatedAtDesc(String tenantId);
+
+    /**
+     * Portada (primera foto) de varios productos en una sola consulta, en vez de
+     * cargar la galería entera de cada uno sólo para leer {@code images.get(0)}.
+     * Filas {@code [productId, url]}.
+     */
+    @org.springframework.data.jpa.repository.Query(
+            "select p.id, img from Product p join p.images img where p.id in :ids and index(img) = 0")
+    List<Object[]> findCoverImages(@org.springframework.data.repository.query.Param("ids") java.util.Collection<String> ids);
     List<Product> findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(String tenantId);
     List<Product> findByTenantIdAndDeletedTrueOrderByCreatedAtDesc(String tenantId);
     List<Product> findByTenantIdAndSupplierId(String tenantId, String supplierId);

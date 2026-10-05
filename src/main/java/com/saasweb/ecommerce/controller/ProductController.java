@@ -34,20 +34,30 @@ public class ProductController {
 
     // --- Público (catálogo) ---
 
+    // DTOs públicos: nunca costo, proveedor, IVA ni códigos de barras (de Ruth, PROYECTO.md #35).
+
     @GetMapping("/api/products")
-    public List<ProductResponse> publicList() {
-        return service.findActive().stream().map(ProductResponse::from).toList();
+    public List<com.saasweb.ecommerce.dto.ProductDtos.PublicProductListResponse> publicList() {
+        return toPublicList(service.findActive());
     }
 
     @GetMapping("/api/products/best-sellers")
-    public List<ProductResponse> bestSellers(@RequestParam(defaultValue = "8") int limit) {
-        return service.bestSellers(Math.min(Math.max(limit, 1), 20)).stream()
-                .map(ProductResponse::from).toList();
+    public List<com.saasweb.ecommerce.dto.ProductDtos.PublicProductListResponse> bestSellers(
+            @RequestParam(defaultValue = "8") int limit) {
+        return toPublicList(service.bestSellers(Math.min(Math.max(limit, 1), 20)));
     }
 
     @GetMapping("/api/products/{id}")
-    public ProductResponse publicGet(@PathVariable String id) {
-        return ProductResponse.from(service.get(id));
+    public com.saasweb.ecommerce.dto.ProductDtos.PublicProductResponse publicGet(@PathVariable String id) {
+        return com.saasweb.ecommerce.dto.ProductDtos.PublicProductResponse.from(service.get(id));
+    }
+
+    private List<com.saasweb.ecommerce.dto.ProductDtos.PublicProductListResponse> toPublicList(
+            List<com.saasweb.ecommerce.model.Product> products) {
+        java.util.Map<String, String> covers = service.coverImages(products);
+        return products.stream()
+                .map(p -> com.saasweb.ecommerce.dto.ProductDtos.PublicProductListResponse.from(p, covers.get(p.getId())))
+                .toList();
     }
 
     // --- Admin ---

@@ -62,6 +62,32 @@ class ParidadRuthTest {
     }
 
     @Test
+    void elCatalogoPublicoNoExponeDatosInternos() throws Exception {
+        String auth = login("11111111", "test-pass");
+        String json = "{\"name\":\"Interno " + UUID.randomUUID().toString().substring(0, 6) + "\",\"description\":\"Producto de prueba\","
+                + "\"price\":500,\"costPrice\":200,\"images\":[\"https://example.com/1.jpg\",\"https://example.com/2.jpg\"],"
+                + "\"barcode\":\"779" + System.nanoTime() % 1_000_000_000L + "\",\"sizeStocks\":[{\"size\":\"U\",\"stock\":5}]}";
+        String id = mapper.readTree(mvc.perform(post("/api/admin/products").header("Authorization", auth)
+                .contentType(MediaType.APPLICATION_JSON).content(json))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString()).get("id").asText();
+
+        JsonNode lista = mapper.readTree(mvc.perform(get("/api/products")).andReturn().getResponse().getContentAsString());
+        JsonNode enLista = null;
+        for (JsonNode p : lista) if (p.get("id").asText().equals(id)) enLista = p;
+        org.assertj.core.api.Assertions.assertThat(enLista).isNotNull();
+        org.assertj.core.api.Assertions.assertThat(enLista.has("costPrice")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(enLista.has("supplierId")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(enLista.has("barcode")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(enLista.has("images")).isFalse();
+        org.assertj.core.api.Assertions.assertThat(enLista.get("imageUrl").asText()).isEqualTo("https://example.com/1.jpg");
+
+        mvc.perform(get("/api/products/" + id))
+                .andExpect(jsonPath("$.images.length()").value(2))
+                .andExpect(jsonPath("$.costPrice").doesNotExist())
+                .andExpect(jsonPath("$.sizeStocks[0].barcode").doesNotExist());
+    }
+
+    @Test
     void cambioSinLlevarseNadaEsUnaDevolucionPura() throws Exception {
         String auth = login("11111111", "test-pass");
         JsonNode p = crearProducto(auth, 2000, false);

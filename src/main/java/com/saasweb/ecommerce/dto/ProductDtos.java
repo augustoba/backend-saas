@@ -129,4 +129,57 @@ public final class ProductDtos {
                     p.getIvaRate(), p.getLowStockThreshold(), params, stocks, p.getBarcode(), p.isFeaturedInPromos());
         }
     }
+
+    /**
+     * Detalle público (ficha de producto, sin auth): sin datos internos del
+     * comercio (costo, proveedor, IVA, códigos de barras). Con la galería completa.
+     */
+    public record PublicProductResponse(
+            String id, String name, String description, BigDecimal price, String ageRange,
+            String imageUrl, List<String> images, String videoUrl, boolean discontinued, Instant createdAt,
+            String sizeScaleId, Integer lowStockThreshold, Map<String, List<String>> params,
+            List<SizeStockDto> sizeStocks, boolean featuredInPromos
+    ) {
+        public static PublicProductResponse from(Product p) {
+            return new PublicProductResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice(),
+                    p.getAgeRange(), p.getImageUrl(), List.copyOf(p.getImages()), p.getVideoUrl(),
+                    p.isDiscontinued(), p.getCreatedAt(), p.getSizeScaleId(), p.getLowStockThreshold(),
+                    publicParams(p), publicStocks(p), p.isFeaturedInPromos());
+        }
+    }
+
+    /**
+     * Listado público (catálogo, más vendidos): como el detalle pero sin
+     * {@code images[]} (las tarjetas sólo usan la portada). {@code sizeStocks} y
+     * {@code params} quedan: el catálogo filtra por talle y parametría en el navegador.
+     */
+    public record PublicProductListResponse(
+            String id, String name, String description, BigDecimal price, String ageRange,
+            String imageUrl, String videoUrl, boolean discontinued, Instant createdAt,
+            String sizeScaleId, Integer lowStockThreshold, Map<String, List<String>> params,
+            List<SizeStockDto> sizeStocks, boolean featuredInPromos
+    ) {
+        /** {@code cover}: la portada ya resuelta en bloque (ver {@code ProductRepository.findCoverImages}). */
+        public static PublicProductListResponse from(Product p, String cover) {
+            return new PublicProductListResponse(p.getId(), p.getName(), p.getDescription(), p.getPrice(),
+                    p.getAgeRange(), cover, p.getVideoUrl(), p.isDiscontinued(), p.getCreatedAt(),
+                    p.getSizeScaleId(), p.getLowStockThreshold(), publicParams(p), publicStocks(p),
+                    p.isFeaturedInPromos());
+        }
+    }
+
+    private static Map<String, List<String>> publicParams(Product p) {
+        Map<String, List<String>> params = new LinkedHashMap<>();
+        for (ProductParam pp : p.getParams()) {
+            params.computeIfAbsent(pp.getGroupId(), k -> new ArrayList<>()).add(pp.getOptionId());
+        }
+        return params;
+    }
+
+    /** Variantes sin el código de barras (es dato interno del local). */
+    private static List<SizeStockDto> publicStocks(Product p) {
+        return p.getSizeStocks().stream()
+                .map(v -> new SizeStockDto(v.getId(), v.getNombre(), v.getStock(), null))
+                .toList();
+    }
 }

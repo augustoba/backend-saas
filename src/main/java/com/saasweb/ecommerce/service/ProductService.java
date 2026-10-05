@@ -108,6 +108,16 @@ public class ProductService {
      * PROCESADO), sólo productos publicados y no archivados. Para la home.
      */
     @Transactional(readOnly = true)
+    /** Portada de cada producto, en una sola consulta: {@code id → url}. */
+    public java.util.Map<String, String> coverImages(List<Product> products) {
+        if (products.isEmpty()) return java.util.Map.of();
+        java.util.Map<String, String> covers = new java.util.HashMap<>();
+        for (Object[] row : repo.findCoverImages(products.stream().map(Product::getId).toList())) {
+            covers.put((String) row[0], (String) row[1]);
+        }
+        return covers;
+    }
+
     public List<Product> bestSellers(int limit) {
         String tenantId = TenantContext.getTenantId();
         Instant from = Instant.now().minus(90, ChronoUnit.DAYS);

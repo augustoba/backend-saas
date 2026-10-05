@@ -24,8 +24,8 @@ class CatalogTest {
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(1)))
                 .andExpect(jsonPath("$[0].params").exists())
                 .andExpect(jsonPath("$[0].sizeStocks").isArray())
-                .andExpect(jsonPath("$[0].images").isArray())
-                .andExpect(jsonPath("$[0].images.length()", greaterThanOrEqualTo(1)))
+                // El listado público no trae la galería (sólo la portada): ver PublicProductListResponse.
+                .andExpect(jsonPath("$[0].images").doesNotExist())
                 .andExpect(jsonPath("$[0].imageUrl").isNotEmpty());
     }
 
