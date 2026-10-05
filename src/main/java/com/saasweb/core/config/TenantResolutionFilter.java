@@ -98,6 +98,9 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
     private boolean isMissingEcommerceSiteForVisitor(String tenantId, HttpServletRequest request) {
         if (tenantId == null) return false;
         if (tenantService.sistemaDe(tenantId) != Sistema.POS) return false;
+        // La identidad (nombre, logo, sistema) sí: la pantalla de login del POS la
+        // necesita, y el front la usa para saber que no hay sitio y mandar al panel.
+        if (request.getRequestURI().equals("/api/settings")) return false;
         return isPublicVisitorRequest(request);
     }
 

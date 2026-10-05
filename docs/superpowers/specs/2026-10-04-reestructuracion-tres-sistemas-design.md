@@ -285,8 +285,8 @@ actualiza esta sección.
       asistente). Verificado: el restaurante de prueba recibe `parrilla-prueba/carta`
       y la piloto `estilos-pequenos/productos`. No se subió una foto real (la cuenta
       configurada es la de producción de la piloto).
-- [ ] Pendiente para las etapas 3/4: el asistente sigue mostrando el paso de
-      diseño de tienda online aunque el sistema sea POS o restaurante.
+- [x] (resuelto en 3d) El asistente ya no muestra diseño, color ni vista previa
+      cuando el sistema no tiene tienda online (POS, restaurante).
 
 ### Etapa 2 — Ecommerce ⏳ (en curso)
 - [x] **2.1** Código del ecommerce mudado a `ecommerce/{controller,service,repository,model,dto}`
@@ -409,7 +409,7 @@ actualiza esta sección.
       simula el pago: cobro → evento → pedido; ARCA con su cliente simulado).
       Con las credenciales de sandbox se prueba en minutos.
 
-### Etapa 3 — POS ⏳ (en curso)
+### Etapa 3 — POS ✅
 - [x] **3a** Artículos, categorías y stock con tablas propias (V15: `pos_articulo`,
       `pos_categoria`, `pos_movimiento_stock`), API `/api/pos/{articulos,categorias,stock}`:
       alta/edición con código de barras único en la tienda, búsqueda por código
@@ -438,8 +438,27 @@ actualiza esta sección.
       de vender**), vendido sin costo cargado, ganancia bruta, gastos por categoría,
       resultado, por medio de pago y los 10 más vendidos. PosGastosTest, 68/68;
       V16 y V17 en MySQL.
-- [ ] **3d** Pantallas del POS
-- [ ] Verificado: abrir caja, vender escaneando, facturar, cerrar con arqueo
+- [x] **3d** Pantallas del POS (front `24e14ea`, `src/app/pos/`): Vender (lector siempre
+      enfocado: Enter agrega por código exacto o por el único resultado de la
+      búsqueda; importes sueltos; vuelto en vivo; CUIT opcional), Caja (abrir,
+      ingresos/egresos, cierre con vista previa de la diferencia, historial y detalle
+      de cada caja), Ventas, ticket imprimible (anular, reintentar factura),
+      Artículos (alta con código, ingreso, ajuste, categorías, archivados),
+      Movimientos de stock, Proveedores, Gastos y Resultados. Menú propio del POS
+      (lo del ecommerce queda sólo para ecommerce); el inicio del panel lleva a Vender.
+      - **Arreglado:** un POS mostraba el catálogo del ecommerce roto en `/`
+        (spec: sin sitio público). Ahora las páginas públicas llevan al panel
+        (`sitioPublicoGuard`), `ProductService` no pide el catálogo si la tienda no
+        es ecommerce, y el backend deja leer `/api/settings` del POS sin sesión (la
+        identidad hace falta en el login); el catálogo sigue en 503.
+- [x] Verificado en el navegador contra MySQL ("Kiosco Prueba", sin errores de
+      consola): abrir caja con $5.000 → escanear 2 aguas + 1 alfajor + importe
+      suelto $1.000 → total $4.000, paga con $5.000, vuelto $1.000 → ticket
+      → egreso $500 → esperado $8.500, se cuentan $8.400 → cierre con diferencia
+      −$100 en el historial → alta de artículo con código + ingreso de 4 → gasto
+      → Resultados. Facturación con ARCA cubierta por PosVentasTest (ARCA
+      simulado: falla, reintento con CAE, anulación con nota de crédito); en vivo
+      espera credenciales de homologación, igual que el ecommerce.
 
 ### Etapa 4 — Restaurante ⏳
 - [ ] Portar back + front sobre el núcleo, tablas `rs_`
@@ -477,4 +496,5 @@ actualiza esta sección.
 | 2026-10-05 | Etapa 2: E2E de compra WhatsApp, venta en el local y cambio (MP y ARCA en vivo esperan credenciales de prueba) | docs, front `57a5f15` |
 | 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back `a0b1b82` |
 | 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back `599b990` |
-| 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back (ver git log) |
+| 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back `81a4024` |
+| 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back (ver git log), front `24e14ea` |

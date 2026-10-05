@@ -83,9 +83,13 @@ class SistemaTest {
     @Test
     void unaTiendaPosNoTieneSitioPublico() throws Exception {
         Tenant pos = alta(Sistema.POS, null);
-        mvc.perform(get("/api/settings").with(r -> { r.setServerName(pos.getSlug() + ".localhost"); return r; }))
+        // El catálogo no existe; la identidad sí (la usan el login y el front para mandar al panel).
+        mvc.perform(get("/api/products").with(r -> { r.setServerName(pos.getSlug() + ".localhost"); return r; }))
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.error").value("sin_sitio_online"));
+        mvc.perform(get("/api/settings").with(r -> { r.setServerName(pos.getSlug() + ".localhost"); return r; }))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.sistema").value("POS"));
 
         Tenant eco = alta(Sistema.ECOMMERCE, null);
         mvc.perform(get("/api/settings").with(r -> { r.setServerName(eco.getSlug() + ".localhost"); return r; }))
