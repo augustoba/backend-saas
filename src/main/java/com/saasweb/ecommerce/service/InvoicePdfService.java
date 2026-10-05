@@ -65,7 +65,7 @@ public class InvoicePdfService {
             addHeaderCell(table, "Subtotal", bold);
 
             for (OrderLine l : order.getLines()) {
-                if (!l.isAccepted()) continue;
+                if (!l.vendida()) continue;
                 BigDecimal subtotal = l.getUnitPrice().multiply(BigDecimal.valueOf(l.getQuantity()));
                 table.addCell(new PdfPCell(new Paragraph(l.getProductName(), normal)));
                 table.addCell(new PdfPCell(new Paragraph(l.getSize(), normal)));

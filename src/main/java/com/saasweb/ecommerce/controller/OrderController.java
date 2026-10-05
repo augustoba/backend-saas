@@ -3,7 +3,9 @@ package com.saasweb.ecommerce.controller;
 import com.saasweb.ecommerce.model.Order;
 
 import com.saasweb.ecommerce.dto.OrderDtos.CreateOrderRequest;
-import com.saasweb.ecommerce.dto.OrderDtos.LinesRequest;
+import com.saasweb.ecommerce.dto.OrderDtos.AddLineRequest;
+import com.saasweb.ecommerce.dto.OrderDtos.LineIdsRequest;
+import com.saasweb.ecommerce.dto.OrderDtos.LineQuantityRequest;
 import com.saasweb.ecommerce.dto.OrderDtos.OrderResponse;
 import com.saasweb.ecommerce.dto.OrderDtos.PublicOrderResponse;
 import com.saasweb.core.PageResponse;
@@ -84,10 +86,37 @@ public class OrderController {
         return OrderResponse.from(service.get(id));
     }
 
-    @PutMapping("/api/admin/orders/{id}/lines")
+    /** Entrega parcial: entrega sólo esas líneas (descuenta su stock). */
+    @PostMapping("/api/admin/orders/{id}/confirm-lines")
     @PreAuthorize("hasAuthority('ORDERS_MANAGE')")
-    public OrderResponse setLines(@PathVariable String id, @Valid @RequestBody LinesRequest req) {
-        return OrderResponse.from(service.setLineAcceptance(id, req.lines()));
+    public OrderResponse confirmLines(@PathVariable String id, @Valid @RequestBody LineIdsRequest req,
+                                      Authentication auth) {
+        return OrderResponse.from(service.confirmLines(id, req.lineIds(), auth.getName()));
+    }
+
+    @PostMapping("/api/admin/orders/{id}/cancel-lines")
+    @PreAuthorize("hasAuthority('ORDERS_MANAGE')")
+    public OrderResponse cancelLines(@PathVariable String id, @Valid @RequestBody LineIdsRequest req) {
+        return OrderResponse.from(service.cancelLines(id, req.lineIds()));
+    }
+
+    @PostMapping("/api/admin/orders/{id}/lines")
+    @PreAuthorize("hasAuthority('ORDERS_MANAGE')")
+    public OrderResponse addLine(@PathVariable String id, @Valid @RequestBody AddLineRequest req) {
+        return OrderResponse.from(service.addLine(id, req.productId(), req.size(), req.quantity()));
+    }
+
+    @PatchMapping("/api/admin/orders/{id}/lines/{lineId}")
+    @PreAuthorize("hasAuthority('ORDERS_MANAGE')")
+    public OrderResponse updateLine(@PathVariable String id, @PathVariable String lineId,
+                                    @Valid @RequestBody LineQuantityRequest req) {
+        return OrderResponse.from(service.updateLineQuantity(id, lineId, req.quantity()));
+    }
+
+    @DeleteMapping("/api/admin/orders/{id}/lines/{lineId}")
+    @PreAuthorize("hasAuthority('ORDERS_MANAGE')")
+    public OrderResponse removeLine(@PathVariable String id, @PathVariable String lineId) {
+        return OrderResponse.from(service.removeLine(id, lineId));
     }
 
     @PostMapping("/api/admin/orders/{id}/confirm")

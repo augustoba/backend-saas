@@ -52,9 +52,10 @@ public class OrderLine {
     @Column(nullable = false)
     private boolean costEstimated = false;
 
-    /** El dueño/a lo tilda para confirmar que hay stock y lo va a entregar. */
-    @Column(nullable = false)
-    private boolean accepted = true;
+    /** PENDIENTE hasta que se entrega o se cancela (entrega parcial, ver {@link OrderLineStatus}). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private OrderLineStatus status = OrderLineStatus.PENDIENTE;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "order_id")
@@ -133,12 +134,17 @@ public class OrderLine {
         this.costEstimated = costEstimated;
     }
 
-    public boolean isAccepted() {
-        return accepted;
+    public OrderLineStatus getStatus() {
+        return status;
     }
 
-    public void setAccepted(boolean accepted) {
-        this.accepted = accepted;
+    public void setStatus(OrderLineStatus status) {
+        this.status = status;
+    }
+
+    /** true si se entregó: es lo que cuenta como vendido (métricas, factura, más vendidos). */
+    public boolean vendida() {
+        return status == OrderLineStatus.ENTREGADA;
     }
 
     public Order getOrder() {

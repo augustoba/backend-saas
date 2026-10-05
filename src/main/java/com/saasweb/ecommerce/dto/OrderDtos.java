@@ -6,6 +6,7 @@ import com.saasweb.ecommerce.model.SaleChannel;
 import com.saasweb.ecommerce.model.DeliveryMethod;
 import com.saasweb.ecommerce.model.Order;
 import com.saasweb.ecommerce.model.OrderLine;
+import com.saasweb.ecommerce.model.OrderLineStatus;
 import com.saasweb.ecommerce.model.OrderStatus;
 import com.saasweb.ecommerce.model.PaymentMethod;
 import jakarta.validation.constraints.Max;
@@ -53,19 +54,27 @@ public final class OrderDtos {
             @Size(max = 20) String buyerCuit
     ) {}
 
-    public record LineAcceptance(@NotBlank String lineId, @NotNull Boolean accepted) {}
+    /** Líneas a entregar o cancelar (entrega parcial). */
+    public record LineIdsRequest(@NotEmpty List<String> lineIds) {}
 
-    public record LinesRequest(@NotEmpty List<LineAcceptance> lines) {}
+    /** Ítem que se suma a un pedido todavía pendiente. */
+    public record AddLineRequest(@NotBlank String productId, @NotBlank String size, @jakarta.validation.constraints.Min(1) int quantity) {}
+
+    public record LineQuantityRequest(@jakarta.validation.constraints.Min(1) int quantity) {}
 
     // --- salida ---
 
     public record OrderLineResponse(
             String id, String productId, String productName, String size,
-            int quantity, BigDecimal unitPrice, boolean accepted
+            int quantity, BigDecimal unitPrice,
+            /** PENDIENTE, ENTREGADA o CANCELADA (entrega parcial). */
+            OrderLineStatus status,
+            /** status != CANCELADA (compatibilidad con pantallas viejas). */
+            boolean accepted
     ) {
         static OrderLineResponse from(OrderLine l) {
             return new OrderLineResponse(l.getId(), l.getProductId(), l.getProductName(), l.getSize(),
-                    l.getQuantity(), l.getUnitPrice(), l.isAccepted());
+                    l.getQuantity(), l.getUnitPrice(), l.getStatus(), l.getStatus() != OrderLineStatus.CANCELADA);
         }
     }
 

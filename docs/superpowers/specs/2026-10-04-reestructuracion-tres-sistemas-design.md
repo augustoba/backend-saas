@@ -144,7 +144,7 @@ cuando no hay filas en ⏳.
 | Función de Ruth | Estado |
 |---|---|
 | 21 diseños de tienda (20 + Clásico) con vocabulario de tienda | ✅ (Fase 19) |
-| Entrega/cancelación parcial de pedidos (estado por línea, agregar ítem) | ⏳ |
+| Entrega/cancelación parcial de pedidos (estado por línea, agregar ítem) | ✅ (2.3a) |
 | Devolución pura en Cambios | ⏳ |
 | Ajuste masivo de precio | ⏳ |
 | Eliminar producto definitivo (+ borrar fotos en el proveedor) | ⏳ |
@@ -310,6 +310,22 @@ actualiza esta sección.
         rubros simplemente la dejan vacía.
       - Queda para más adelante: renombrar "talle"/`size` a "variante" en la API y
         en las pantallas (hoy el alias `Variante.getSize()` mantiene compatibilidad).
+- [x] **2.3a** Entrega y cancelación parcial de pedidos (de Ruth):
+      - V12: `ec_pedido_linea.status` PENDIENTE/ENTREGADA/CANCELADA reemplaza a
+        `accepted` (backfill de pedidos existentes).
+      - Endpoints `confirm-lines`, `cancel-lines`, agregar/cambiar cantidad/sacar
+        línea; confirmar o cancelar el pedido entero = atajo sobre lo pendiente.
+        El pedido se resuelve (PROCESADO/CANCELADO) cuando no queda nada
+        pendiente; lo cancelado deja de cobrarse; la venta en el local se factura
+        con ARCA al resolverse, por lo entregado. Se mantiene el aviso de pago de
+        Mercado Pago aprobado que no se pudo confirmar (propio del SaaS).
+      - Front: detalle del pedido de Ruth + notas de crédito y reintento de
+        factura del SaaS.
+      - Verificado: EntregaParcialTest (2 casos), 55/55; E2E en el navegador
+        (entregar 1 de 2 → sigue pendiente; cancelar el otro → PROCESADO cobrando
+        sólo lo entregado), sin errores de consola.
+- [ ] **2.3b** Factura y cobro de Mercado Pago del pedido vía el núcleo
+      (`core_comprobante` para las facturas, `core_cobro_mp` + evento)
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -346,4 +362,5 @@ actualiza esta sección.
 | 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back `f3689f5` |
 | 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back `03eea7e` |
 | 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back `93f817c` |
-| 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back (ver git log), front `1768d9b` |
+| 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back `70c344d`, front `1768d9b` |
+| 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back (ver git log), front `696efb7` |

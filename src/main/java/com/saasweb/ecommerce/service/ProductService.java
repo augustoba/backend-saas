@@ -112,7 +112,7 @@ public class ProductService {
         orderRepo.findByTenantIdAndStatusAndProcessedAtGreaterThanEqualAndProcessedAtLessThan(
                         tenantId, OrderStatus.PROCESADO, from, Instant.now())
                 .forEach(o -> o.getLines().forEach(l -> {
-                    if (l.isAccepted()) units.merge(l.getProductId(), (long) l.getQuantity(), Long::sum);
+                    if (l.vendida()) units.merge(l.getProductId(), (long) l.getQuantity(), Long::sum);
                 }));
         return units.entrySet().stream()
                 .sorted(Map.Entry.<String, Long>comparingByValue().reversed())

@@ -84,7 +84,7 @@ public class MetricsService {
         boolean costDataComplete = true;
         for (Order o : orders) {
             for (OrderLine l : o.getLines()) {
-                if (!l.isAccepted()) continue;
+                if (!l.vendida()) continue;
                 revenue = revenue.add(l.getUnitPrice().multiply(BigDecimal.valueOf(l.getQuantity())));
                 units += l.getQuantity();
                 if (l.getCostPrice() != null) {
@@ -138,7 +138,7 @@ public class MetricsService {
             boolean countedOrder = false;
 
             for (OrderLine l : o.getLines()) {
-                if (!l.isAccepted()) continue;
+                if (!l.vendida()) continue;
                 BigDecimal lineRevenue = l.getUnitPrice().multiply(BigDecimal.valueOf(l.getQuantity()));
                 long qty = l.getQuantity();
 
@@ -270,7 +270,7 @@ public class MetricsService {
             BigDecimal revenue = BigDecimal.ZERO;
             long units = 0;
             for (OrderLine l : o.getLines()) {
-                if (!l.isAccepted()) continue;
+                if (!l.vendida()) continue;
                 revenue = revenue.add(l.getUnitPrice().multiply(BigDecimal.valueOf(l.getQuantity())));
                 units += l.getQuantity();
             }
