@@ -1,6 +1,5 @@
 package com.saasweb.core.repository;
 
-import com.saasweb.core.model.AdminUser;
 
 import com.saasweb.core.model.Role;
 import org.springframework.data.jpa.repository.JpaRepository;

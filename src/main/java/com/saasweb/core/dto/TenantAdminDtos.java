@@ -1,8 +1,8 @@
 package com.saasweb.core.dto;
 
+
 import com.saasweb.core.model.Rubro;
 import com.saasweb.core.model.Tenant;
-import com.saasweb.core.service.TenantDeletionService;
 
 import com.saasweb.core.model.Sistema;
 import jakarta.validation.constraints.NotBlank;
@@ -12,6 +12,20 @@ import jakarta.validation.constraints.Pattern;
 import java.time.Instant;
 
 public class TenantAdminDtos {
+    /**
+     * Diseños de tienda que acepta el backend — tiene que coincidir con
+     * `LAYOUTS` del front (`admin-appearance.component.ts`, que incluye los de
+     * plantilla de `core/layouts.ts`): si un id falta acá, el PUT devuelve 400
+     * aunque el panel lo ofrezca. Lo reusa `SiteSettingsDtos.AppearanceRequest` del ecommerce.
+     */
+    public static final String LAYOUT_PATTERN = "^$|^("
+            // Propios del SaaS (ramas del catálogo)
+            + "classic|minimal|boutique|curva|grid|mercado|astra|big-store|neve|oceanwp"
+            + "|orchid-store|shopper-store|sydney|woostify|studio"
+            // Plantillas con componente propio (traídas del ecommerce de Ruth)
+            + "|editorial|pop|vidriera|ofertas|fichero|mosaico|nova|neon|caramelo|cohete"
+            + "|jungla|crayon|atelier|feria|periodico|retro|suizo|cancha|cine|playa"
+            + ")$";
 
     /**
      * Alta de tenant (ver PLAN_SAAS.md Fase 10, asistente "Crear tienda").
@@ -25,7 +39,7 @@ public class TenantAdminDtos {
             @NotBlank @Pattern(regexp = "^[a-z0-9]+(-[a-z0-9]+)*$",
                     message = "El identificador sólo puede tener minúsculas, números y guiones.") String slug,
             @NotNull Rubro rubro,
-            @Pattern(regexp = SiteSettingsDtos.LAYOUT_PATTERN, message = "Diseño desconocido")
+            @Pattern(regexp = LAYOUT_PATTERN, message = "Diseño desconocido")
             String layout,
             @Pattern(regexp = "^$|^#[0-9a-fA-F]{6}$", message = "Color inválido (formato #rrggbb)")
             String brandColor,

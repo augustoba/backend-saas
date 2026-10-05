@@ -1,5 +1,6 @@
 package com.saasweb.core.model;
 
+
 import jakarta.persistence.*;
 
 /**

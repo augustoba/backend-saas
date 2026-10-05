@@ -1,6 +1,5 @@
 package com.saasweb.core.controller;
 
-import com.saasweb.core.dto.AdminUserDtos;
 
 import com.saasweb.core.dto.AdminUserDtos.CreateUserRequest;
 import com.saasweb.core.dto.AdminUserDtos.UpdateUserRequest;

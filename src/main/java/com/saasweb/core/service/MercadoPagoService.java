@@ -1,6 +1,5 @@
 package com.saasweb.core.service;
 
-import com.saasweb.core.controller.MercadoPagoWebhookController;
 
 import com.saasweb.core.common.BadRequestException;
 import org.springframework.core.ParameterizedTypeReference;

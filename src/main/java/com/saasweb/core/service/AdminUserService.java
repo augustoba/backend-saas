@@ -1,6 +1,5 @@
 package com.saasweb.core.service;
 
-import com.saasweb.core.dto.AdminUserDtos;
 
 import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.common.ResourceNotFoundException;

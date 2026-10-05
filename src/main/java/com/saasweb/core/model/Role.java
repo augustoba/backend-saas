@@ -1,6 +1,5 @@
 package com.saasweb.core.model;
 
-import com.saasweb.core.service.RoleService;
 
 import jakarta.persistence.*;
 

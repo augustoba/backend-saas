@@ -1,6 +1,5 @@
 package com.saasweb.core.service;
 
-import com.saasweb.core.dto.PlatformMailDtos;
 
 import com.saasweb.core.config.AppProperties;
 import com.saasweb.core.dto.PlatformMailDtos.PlatformMailSettingsRequest;

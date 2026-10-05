@@ -1,6 +1,5 @@
 package com.saasweb.core.controller;
 
-import com.saasweb.core.dto.AccountDtos;
 
 import com.saasweb.core.dto.AccountDtos.AccountResponse;
 import com.saasweb.core.dto.AccountDtos.ChangePasswordRequest;

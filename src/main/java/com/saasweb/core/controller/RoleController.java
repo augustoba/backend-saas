@@ -1,6 +1,5 @@
 package com.saasweb.core.controller;
 
-import com.saasweb.core.dto.RoleDtos;
 
 import com.saasweb.core.dto.RoleDtos.PermissionInfo;
 import com.saasweb.core.dto.RoleDtos.RoleRequest;

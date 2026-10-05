@@ -3,7 +3,6 @@ package com.saasweb.core.dto;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Plan;
-import com.saasweb.core.controller.PlanController;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;

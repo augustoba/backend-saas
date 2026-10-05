@@ -4,7 +4,6 @@ import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.model.Plan;
-import com.saasweb.core.controller.PlanController;
 import com.saasweb.core.repository.PlanRepository;
 
 import com.saasweb.core.common.ResourceNotFoundException;

@@ -258,8 +258,24 @@ actualiza esta sección.
 - [ ] Pendiente para las etapas 3/4: el asistente sigue mostrando el paso de
       diseño de tienda online aunque el sistema sea POS o restaurante.
 
-### Etapa 2 — Ecommerce ⏳
-- [ ] Mover a `ecommerce/` con tablas `ec_`; talle → variante
+### Etapa 2 — Ecommerce ⏳ (en curso)
+- [x] **2.1** Código del ecommerce mudado a `ecommerce/{controller,service,repository,model,dto}`
+      (117 clases: los 14 paquetes `core/<feature>` + `modules/ropa` + settings de
+      tienda, notas de crédito, PDF/mail de factura y webhook de Mercado Pago).
+      Dependencias del núcleo hacia el ecommerce invertidas (ArchUnit en verde):
+      - Alta: `TenantProvisioningService` (núcleo: tienda, roles, admin, identidad)
+        + `InicializadorDeSistema` → `InicializadorEcommerce` (settings, home,
+        carrusel, gastos y productos de ejemplo; atiende también POS hasta la Etapa 3).
+      - Baja: `LimpiezaDeTienda` → `LimpiezaEcommerce`.
+      - Arranque: `DataSeeder` del núcleo (`@Order(1)`) + `SeedEcommerce` (`@Order(2)`).
+      - Configuración: `ConfiguracionDtos` + `ConfiguracionController` en el núcleo
+        (mismas URLs `/api/admin/settings/{mercadopago,arca,cloudinary,mail}`);
+        `LAYOUT_PATTERN` pasa a `TenantAdminDtos`.
+      Sin cambios de esquema ni de API. Verificado: 51/51 tests; las 6 respuestas
+      de settings idénticas a las de antes; 13 endpoints públicos y del panel en
+      200; alta de una tienda ferretería (4 productos de ejemplo, colores del
+      asistente aplicados) y su baja definitiva (no queda ninguna fila).
+- [ ] Tablas `ec_`; talle → variante
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -292,4 +308,5 @@ actualiza esta sección.
 | 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back `a76b6fa` |
 | 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back `933616e` |
 | 2026-10-04 | 1g: panel según el sistema, dominios, asistente con sistema + admin | front `3e4f873` |
-| 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back (ver git log), front `70bbb68` |
+| 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back `ace29d1`, front `70bbb68` |
+| 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back (ver git log) |

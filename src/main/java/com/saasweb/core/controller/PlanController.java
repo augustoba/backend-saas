@@ -1,7 +1,6 @@
 package com.saasweb.core.controller;
 
 import com.saasweb.core.model.Plan;
-import com.saasweb.core.dto.PlanAdminDtos;
 import com.saasweb.core.service.PlanService;
 
 import com.saasweb.core.dto.PlanAdminDtos.PlanResponse;

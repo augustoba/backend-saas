@@ -1,7 +1,7 @@
 package com.saasweb.core.service;
 
 import com.saasweb.core.common.TenantContext;
-import com.saasweb.core.dto.SiteSettingsDtos;
+import com.saasweb.core.dto.ConfiguracionDtos;
 import com.saasweb.core.model.*;
 import com.saasweb.core.repository.*;
 import org.springframework.stereotype.Service;
@@ -114,7 +114,7 @@ public class ConfiguracionService {
     // ---------- edición ----------
 
     /** La parte de identidad del formulario "Identidad" del panel. */
-    public Identidad actualizarIdentidad(SiteSettingsDtos.PlatformSettingsRequest req) {
+    public Identidad actualizarIdentidad(ConfiguracionDtos.IdentidadRequest req) {
         Identidad i = identidad();
         i.setStoreName(req.storeName().trim());
         i.setWhatsappNumber(req.whatsappNumber().trim());
@@ -134,7 +134,7 @@ public class ConfiguracionService {
     }
 
     /** {@code accessToken} en blanco = no tocar el guardado. */
-    public ConfigMp actualizarMp(SiteSettingsDtos.MercadoPagoConfigRequest req) {
+    public ConfigMp actualizarMp(ConfiguracionDtos.MercadoPagoConfigRequest req) {
         ConfigMp c = mp();
         c.setMpEnabled(Boolean.TRUE.equals(req.mpEnabled()));
         if (req.accessToken() != null && !req.accessToken().isBlank()) c.setMpAccessToken(req.accessToken().trim());
@@ -143,7 +143,7 @@ public class ConfiguracionService {
     }
 
     /** Certificado y clave en blanco = no tocar los guardados. */
-    public ConfigArca actualizarArca(SiteSettingsDtos.ArcaConfigRequest req) {
+    public ConfigArca actualizarArca(ConfiguracionDtos.ArcaConfigRequest req) {
         ConfigArca c = arca();
         c.setArcaEnabled(Boolean.TRUE.equals(req.arcaEnabled()));
         if (req.arcaModoPrueba() != null) c.setArcaModoPrueba(req.arcaModoPrueba());

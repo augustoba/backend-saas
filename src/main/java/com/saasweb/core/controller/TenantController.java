@@ -2,7 +2,6 @@ package com.saasweb.core.controller;
 
 import com.saasweb.core.model.Rubro;
 import com.saasweb.core.model.Tenant;
-import com.saasweb.core.dto.TenantAdminDtos;
 import com.saasweb.core.service.TenantDeletionService;
 import com.saasweb.core.service.TenantProvisioningService;
 import com.saasweb.core.service.TenantService;

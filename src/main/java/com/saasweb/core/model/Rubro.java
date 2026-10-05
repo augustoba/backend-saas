@@ -1,6 +1,5 @@
 package com.saasweb.core.model;
 
-import com.saasweb.core.service.TenantProvisioningService;
 
 /**
  * Rubro de un tenant: determina qué plantilla de parametría/productos de
