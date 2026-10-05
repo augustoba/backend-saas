@@ -1,0 +1,22 @@
+# /etc/systemd/system/saasweb.service — el backend del SaaS como servicio.
+# Arranca solo al prender el servidor y se reinicia si se cae.
+#   sudo systemctl daemon-reload && sudo systemctl enable --now saasweb
+#   journalctl -u saasweb -f        (ver el log en vivo)
+
+[Unit]
+Description=SaaS (backend Spring Boot)
+After=network-online.target mysql.service
+Wants=network-online.target
+
+[Service]
+User=saasweb
+WorkingDirectory=/srv/saasweb
+EnvironmentFile=/etc/saasweb/saasweb.env
+# VPS-1 (4 GB): 1 GB de heap alcanza para ~20 tiendas chicas (ver deploy/README.md §Capacidad).
+ExecStart=/usr/bin/java -Xms384m -Xmx1g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError -jar /srv/saasweb/backend.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

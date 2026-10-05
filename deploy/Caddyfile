@@ -1,0 +1,57 @@
+# Caddy del SaaS (VPS de OVH). Un solo bloque atiende TODAS las tiendas:
+#   - el dominio de la plataforma y sus subdominios (<slug>.miplataforma.com)
+#   - los dominios propios que pagan los clientes (www.mitienda.com)
+# El certificado de cada dominio se pide la primera vez que alguien entra
+# (on-demand TLS), pero sólo si el backend dice que es de una tienda activa:
+# así nadie puede apuntar un dominio cualquiera y hacernos pedir certificados.
+#
+# Reemplazar admin@miplataforma.com por un mail real (Let's Encrypt avisa ahí
+# si algún certificado no se puede renovar).
+
+{
+	email admin@miplataforma.com
+	on_demand_tls {
+		ask http://127.0.0.1:8080/api/public/core/dominios/permitido
+	}
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+
+	encode zstd gzip
+
+	# API: Caddy le pasa el Host original al backend (así resuelve la tienda).
+	handle /api/* {
+		reverse_proxy 127.0.0.1:8080
+	}
+
+	# Front (Angular, ya compilado): archivos estáticos + fallback a index.html
+	# para las rutas del SPA (/admin/..., /carta/..., /producto/...).
+	handle {
+		root * /srv/saasweb/front
+		# Caché larga sólo para lo que Angular nombra con hash (cambia de nombre en
+		# cada versión); el resto (index.html y las rutas del SPA) se revalida
+		# siempre, así una versión nueva se ve sin limpiar caché.
+		@conHash path *.js *.css *.woff2
+		header @conHash Cache-Control "public, max-age=31536000, immutable"
+		@sinHash not path *.js *.css *.woff2
+		header @sinHash Cache-Control "no-cache"
+		try_files {path} /index.html
+		file_server
+	}
+
+	log {
+		output file /var/log/caddy/saasweb.log {
+			roll_size 50mb
+			roll_keep 5
+		}
+	}
+}
+
+# Lo que entre por http:// va a https:// (Caddy lo hace solo para los dominios
+# que conoce; este bloque cubre los on-demand).
+http:// {
+	redir https://{host}{uri} permanent
+}

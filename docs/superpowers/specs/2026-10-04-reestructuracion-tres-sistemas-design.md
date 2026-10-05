@@ -506,10 +506,24 @@ actualiza esta sección.
       del kiosco → login, del ecommerce → la tienda. Factura de ARCA del restaurante:
       el original no facturaba; queda como mejora (el núcleo ya tiene `ComprobanteService`).
 
-### Etapa 5 — Despliegue ⏳
-- [ ] VPS OVH + Caddy (on-demand TLS) + backups MySQL
-- [ ] Dominio de plataforma + un dominio propio de prueba
-- [ ] Prueba de carga (~20 tiendas simuladas)
+### Etapa 5 — Despliegue ⏳ (preparado; falta ejecutarlo en el VPS)
+- [x] **5a** Todo lo del despliegue en `back/deploy/` con su guía (`deploy/README.md`):
+      `Caddyfile` (un bloque para todas las tiendas, on-demand TLS preguntándole al
+      backend si el dominio es de una tienda activa, API por proxy con el Host
+      original, front estático con fallback del SPA y caché sólo para lo versionado),
+      `saasweb.service` (systemd, `-Xmx1g`, reinicio solo), `saasweb.env.example`
+      (todas las variables; backend sólo en 127.0.0.1, sin seed ni selector demo),
+      `backup-mysql.sh` (dump diario consistente, 14 días, copia externa con rclone)
+      y `publicar.sh` (compila con tests, sube, guarda la versión anterior, reinicia
+      y espera a que responda). Build de producción del front verificado.
+- [x] **5b** Prueba de carga (`deploy/prueba-carga.mjs`, tráfico mezclado de los tres
+      sistemas, sólo lecturas): en la máquina de desarrollo, 40 usuarios concurrentes
+      → **523 req/s, 0 errores, p95 112 ms**; el backend usó ~490 MB. Estimado para el
+      VPS-1: 150–250 req/s; 20 tiendas chicas piden 20–100 req/s en el pico → entra.
+- [ ] **5c** Ejecutar en el VPS (necesita tu acceso: SSH, DNS del dominio, claves):
+      seguir `deploy/README.md` §1–§4, completar el checklist §5 y repetir la prueba
+      de carga contra el VPS real.
+- [ ] Dominio de plataforma (registros A de la raíz y `*`) + un dominio propio de prueba.
 
 ## 10. Registro de avance
 
@@ -541,4 +555,5 @@ actualiza esta sección.
 | 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back `81a4024` |
 | 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back `1ce9b45`, front `24e14ea` |
 | 2026-10-05 | 4a: backend del restaurante portado sobre el núcleo (V18, V19) | back `5993a46` |
-| 2026-10-05 | 4b: front del restaurante, carta en la raíz, arreglo de requests duplicados | back (ver git log), front `e1c0789` |
+| 2026-10-05 | 4b: front del restaurante, carta en la raíz, arreglo de requests duplicados | back `2cab65d`, front `e1c0789` |
+| 2026-10-05 | 5a/5b: archivos y guía de despliegue (Caddy, systemd, backups, publicar) y prueba de carga | back (ver git log) |
