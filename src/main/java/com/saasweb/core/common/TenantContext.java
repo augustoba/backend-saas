@@ -26,6 +26,13 @@ public final class TenantContext {
         return CURRENT.get();
     }
 
+    /** El tenant actual; falla si la request no resolvió ninguno (no debería pasar detrás del filtro). */
+    public static String requireTenantId() {
+        String id = CURRENT.get();
+        if (id == null) throw new IllegalStateException("La request no tiene tienda asociada.");
+        return id;
+    }
+
     public static void clear() {
         CURRENT.remove();
     }

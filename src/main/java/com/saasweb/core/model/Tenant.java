@@ -7,15 +7,13 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /**
- * Un comercio/tienda de la plataforma. Hoy (ver PLAN_SAAS.md) existe una
- * única fila — la app entera resuelve siempre contra ese tenant (ver
- * {@code TenantResolutionFilter}), sembrada por {@code TenantService} a
- * partir de {@code app.tenant.*}. El día que haya resolución por dominio,
- * esta entidad suma `domain`/`subdomain`/`theme`; por ahora tiene sólo lo
- * mínimo para no construir sobre requisitos que todavía no existen.
+ * Un comercio de la plataforma. Usa un único {@link Sistema} (ecommerce, POS o
+ * restaurante). Se resuelve por el `Host` de cada request: dominio propio
+ * ({@link Dominio}) o subdominio `<slug>.<dominio de plataforma>` (ver
+ * {@code TenantResolver}).
  */
 @Entity
-@Table(name = "tenant")
+@Table(name = "core_tenant")
 public class Tenant {
 
     @Id
@@ -35,6 +33,11 @@ public class Tenant {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Rubro rubro;
+
+    /** Sistema que usa la tienda (ver {@link Sistema}). Uno solo por tenant. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Sistema sistema = Sistema.ECOMMERCE;
 
     @Column(nullable = false)
     private boolean active = true;
@@ -80,6 +83,14 @@ public class Tenant {
 
     public void setRubro(Rubro rubro) {
         this.rubro = rubro;
+    }
+
+    public Sistema getSistema() {
+        return sistema;
+    }
+
+    public void setSistema(Sistema sistema) {
+        this.sistema = sistema;
     }
 
     public boolean isActive() {

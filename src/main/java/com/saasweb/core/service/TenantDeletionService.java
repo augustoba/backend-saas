@@ -1,6 +1,7 @@
 package com.saasweb.core.service;
 
 import com.saasweb.core.model.Tenant;
+import com.saasweb.core.repository.DominioRepository;
 import com.saasweb.core.repository.TenantRepository;
 
 import com.saasweb.core.common.BadRequestException;
@@ -52,6 +53,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class TenantDeletionService {
 
     private final TenantRepository tenantRepo;
+    private final DominioRepository dominioRepo;
     private final SiteSettingsRepository siteSettingsRepo;
     private final MarketingConfigRepository marketingConfigRepo;
     private final OrderRepository orderRepo;
@@ -81,7 +83,8 @@ public class TenantDeletionService {
             ShiftRepository shiftRepo, SupplierRepository supplierRepo, SizeScaleRepository sizeScaleRepo,
             AdminUserRepository adminUserRepo, RoleRepository roleRepo, ExpenseRepository expenseRepo,
             StockMovementRepository stockMovementRepo, CreditNoteRepository creditNoteRepo,
-            ExpenseBudgetRepository expenseBudgetRepo) {
+            ExpenseBudgetRepository expenseBudgetRepo, DominioRepository dominioRepo) {
+        this.dominioRepo = dominioRepo;
         this.tenantRepo = tenantRepo;
         this.siteSettingsRepo = siteSettingsRepo;
         this.marketingConfigRepo = marketingConfigRepo;
@@ -143,6 +146,7 @@ public class TenantDeletionService {
         if (siteSettingsRepo.existsById(tenantId)) siteSettingsRepo.deleteById(tenantId);
         if (marketingConfigRepo.existsById(tenantId)) marketingConfigRepo.deleteById(tenantId);
 
+        dominioRepo.deleteByTenantId(tenantId);
         tenantRepo.delete(t);
     }
 }

@@ -1,6 +1,8 @@
 package com.saasweb.core.service;
 
+import com.saasweb.core.model.BusinessModel;
 import com.saasweb.core.model.Rubro;
+import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.core.repository.TenantRepository;
 
@@ -65,6 +67,10 @@ public class TenantService {
         t.setName(name);
         t.setRubro(rubro);
         t.setPlanId(resolvedPlanId);
+        // Hasta que el alta pida el sistema explícito (Etapa 1c), sale del
+        // modelo de negocio del plan.
+        t.setSistema(BusinessModel.POS.equals(planService.get(resolvedPlanId).getBusinessModel())
+                ? Sistema.POS : Sistema.ECOMMERCE);
         return repo.save(t);
     }
 

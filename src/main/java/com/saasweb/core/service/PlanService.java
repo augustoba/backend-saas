@@ -1,5 +1,6 @@
 package com.saasweb.core.service;
 
+import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.model.BusinessModel;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.model.Plan;
@@ -111,6 +112,11 @@ public class PlanService {
     @Transactional(readOnly = true)
     public boolean exists(String planId) {
         return planId != null && repo.existsById(planId);
+    }
+
+    @Transactional(readOnly = true)
+    public Plan get(String planId) {
+        return repo.findById(planId).orElseThrow(() -> new BadRequestException("El plan elegido no existe."));
     }
 
     /** Plan del tenant actual (vía TenantContext). null si el tenant no tiene uno asignado. */

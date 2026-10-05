@@ -27,6 +27,8 @@ import java.util.UUID;
 @Transactional
 public class AuthService {
 
+    private final DominioService dominioService;
+
     private static final int MIN_PASSWORD = 4;
     private static final Duration RESET_TOKEN_TTL = Duration.ofHours(1);
     private final SecureRandom random = new SecureRandom();
@@ -42,7 +44,8 @@ public class AuthService {
     public AuthService(AdminUserRepository users, PasswordEncoder passwordEncoder,
                        JwtService jwtService, AppProperties props,
                        LoginAttemptService loginAttempts, RoleRepository roles,
-                       AccountMailService accountMailService) {
+                       AccountMailService accountMailService, DominioService dominioService) {
+        this.dominioService = dominioService;
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
@@ -96,7 +99,8 @@ public class AuthService {
         user.setResetTokenHash(hashToken(rawToken));
         user.setResetTokenExpiresAt(Instant.now().plus(RESET_TOKEN_TTL));
         users.save(user);
-        String link = props.getUrls().getFrontend() + "/admin/restablecer-clave?token=" + rawToken;
+        // Con el dominio de la tienda (propio o subdominio), no uno fijo del deploy.
+        String link = dominioService.urlPublica(user.getTenantId()) + "/admin/restablecer-clave?token=" + rawToken;
         accountMailService.sendPasswordResetLink(user.getEmail(), user.getNombre(), link);
     }
 

@@ -17,6 +17,7 @@ public class AppProperties {
     private Mail mail = new Mail();
     private Tenant tenant = new Tenant();
     private Urls urls = new Urls();
+    private Platform platform = new Platform();
 
     public Jwt getJwt() {
         return jwt;
@@ -80,6 +81,14 @@ public class AppProperties {
 
     public void setTenant(Tenant tenant) {
         this.tenant = tenant;
+    }
+
+    public Platform getPlatform() {
+        return platform;
+    }
+
+    public void setPlatform(Platform platform) {
+        this.platform = platform;
     }
 
     public Urls getUrls() {
@@ -396,6 +405,49 @@ public class AppProperties {
      * `localhost` no sirve), y a qué página del frontend volver después de
      * pagar (`frontend`).
      */
+    /**
+     * Dominio de la plataforma y datos para dominios propios (ver
+     * {@code TenantResolver} y {@code DominioService}).
+     */
+    public static class Platform {
+        /**
+         * Dominio raíz: cada tienda tiene `<slug>.<domain>`. En desarrollo es
+         * `localhost` (los navegadores resuelven `*.localhost` a 127.0.0.1).
+         */
+        private String domain = "localhost";
+        /** Esquema de los links públicos (`https` en producción). */
+        private String scheme = "http";
+        /**
+         * IP pública del servidor: un dominio propio se activa cuando su DNS
+         * apunta acá. Vacía (desarrollo) = se activa sin consultar DNS.
+         */
+        private String serverIp = "";
+
+        public String getDomain() {
+            return domain;
+        }
+
+        public void setDomain(String domain) {
+            this.domain = domain;
+        }
+
+        public String getScheme() {
+            return scheme;
+        }
+
+        public void setScheme(String scheme) {
+            this.scheme = scheme;
+        }
+
+        public String getServerIp() {
+            return serverIp;
+        }
+
+        public void setServerIp(String serverIp) {
+            this.serverIp = serverIp;
+        }
+    }
+
     public static class Urls {
         private String backend = "http://localhost:8080";
         private String frontend = "http://localhost:4200";

@@ -4,6 +4,7 @@ import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.model.Plan;
 import com.saasweb.core.service.PlanService;
+import com.saasweb.core.service.TenantResolver;
 import com.saasweb.core.service.TenantService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -16,12 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 /**
- * Resuelve el tenant de la request y lo deja en {@link TenantContext} para
- * el resto del pipeline. Hoy (ver PLAN_SAAS.md) sólo existe un tenant por
- * deploy, así que resuelve siempre ese — no lee todavía el header `Host`.
- * Cuando haya multi-tenant real, este es el único lugar que cambia (mapear
- * `Host` → tenant); el resto del código ya va a estar leyendo de
- * {@code TenantContext} y no necesita tocarse.
+ * Resuelve el tenant de la request (por `Host`, ver {@link TenantResolver})
+ * y lo deja en {@link TenantContext} para el resto del pipeline. Un host que
+ * no es de ninguna tienda recibe 404, salvo las rutas que no dependen de una
+ * tienda ({@link #TENANTLESS_PATHS}: la consulta de Caddy, swagger).
  */
 @Component
 public class TenantResolutionFilter extends OncePerRequestFilter {
@@ -35,14 +34,19 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
      */
     public static final String DEMO_TENANT_HEADER = "X-Demo-Tenant";
 
-    private final TenantService tenantService;
-    private final PlanService planService;
-    private final AppProperties props;
+    /** Rutas que funcionan aunque el host no sea de ninguna tienda. */
+    private static final String[] TENANTLESS_PATHS = {
+            "/api/public/core/dominios/permitido", "/swagger-ui", "/v3/api-docs", "/error"};
 
-    public TenantResolutionFilter(TenantService tenantService, PlanService planService, AppProperties props) {
+    private final TenantService tenantService;
+    private final TenantResolver tenantResolver;
+    private final PlanService planService;
+
+    public TenantResolutionFilter(TenantService tenantService, TenantResolver tenantResolver,
+                                  PlanService planService) {
         this.tenantService = tenantService;
+        this.tenantResolver = tenantResolver;
         this.planService = planService;
-        this.props = props;
     }
 
     @Override
@@ -50,7 +54,16 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain chain) throws ServletException, IOException {
         try {
-            String tenantId = resolveTenantId(request);
+            String tenantId = tenantResolver
+                    .resolve(request.getServerName(), request.getHeader(DEMO_TENANT_HEADER))
+                    .orElse(null);
+            if (tenantId == null && !isTenantless(request)) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"error\":\"tienda_no_encontrada\",\"message\":\"No hay ninguna tienda en esta dirección.\"}");
+                return;
+            }
             TenantContext.set(tenantId);
             if (isPausedForVisitor(tenantId, request)) {
                 response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
@@ -119,14 +132,11 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
         return auth == null || !auth.startsWith("Bearer ");
     }
 
-    private String resolveTenantId(HttpServletRequest request) {
-        if (props.getTenant().isDemoSwitchEnabled()) {
-            String slug = request.getHeader(DEMO_TENANT_HEADER);
-            if (slug != null && !slug.isBlank()) {
-                String id = tenantService.resolveIdBySlug(slug.trim());
-                if (id != null) return id;
-            }
+    private boolean isTenantless(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        for (String p : TENANTLESS_PATHS) {
+            if (path.startsWith(p)) return true;
         }
-        return tenantService.resolveCurrentTenantId();
+        return false;
     }
 }

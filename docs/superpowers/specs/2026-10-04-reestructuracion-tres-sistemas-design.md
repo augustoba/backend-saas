@@ -1,3 +1,5 @@
+| 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
+| 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back (este commit) |
 # Reestructuración: un SaaS, tres sistemas (Ecommerce · POS · Restaurante)
 
 > Spec + registro de avance. Se actualiza al cerrar cada punto (qué se hizo,
@@ -183,8 +185,19 @@ actualiza esta sección.
   parte se reescribe; el código del ecommerce que hoy vive en `core/` se muda
   en la Etapa 2.
 
-### Etapa 1 — Núcleo ⏳
-- [ ] `core_tenant` con sistema + `core_dominio` + resolución por Host
+### Etapa 1 — Núcleo ⏳ (en curso)
+- [x] **1a** Núcleo reordenado por capa: `core/{controller,service,repository,model,dto}`
+      con tenant, usuarios/roles, auth, planes, settings, ARCA, Mercado Pago y mail de
+      plataforma; `config/` y `common/` pasan a `core/`. Movimiento mecánico, sin lógica nueva.
+- [x] **1b** `core_tenant` con `sistema` + `core_dominio` + resolución por Host
+      (`TenantResolver`: dominio propio ACTIVO → `<slug>.<plataforma>` → raíz con
+      `X-Demo-Tenant` → 404). ABM en `/api/core/dominios` (permiso nuevo
+      `DOMAINS_MANAGE`), verificación de DNS contra `app.platform.server-ip`,
+      consulta de Caddy en `/api/public/core/dominios/permitido`. Links de
+      recuperar contraseña y vuelta de Mercado Pago con `DominioService.urlPublica`.
+      En desarrollo la plataforma es `localhost`: `estilos-pequenos.localhost` anda.
+      **V3**: todas las columnas `ENUM` de MySQL pasan a `varchar` (regla del
+      proyecto: agregar un valor a un enum de Java no toca la base).
 - [ ] Usuarios/roles/permisos, login, recuperar contraseña
 - [ ] Planes y módulos por sistema
 - [ ] Identidad + config ARCA/MP/mail/imágenes (servicio de imágenes intercambiable)

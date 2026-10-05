@@ -53,6 +53,8 @@ public class SecurityConfig {
                                 "/api/discounts",
                                 "/api/coupons/**",
                                 "/api/settings",
+                                // Lo público de cada sistema y del núcleo (ej: la consulta de Caddy).
+                                "/api/public/**",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/error"
                         ).permitAll()

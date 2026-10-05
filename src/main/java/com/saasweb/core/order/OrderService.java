@@ -1,5 +1,6 @@
 package com.saasweb.core.order;
 
+import com.saasweb.core.service.DominioService;
 import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.common.ResourceNotFoundException;
 import com.saasweb.core.common.TenantContext;
@@ -46,6 +47,8 @@ import java.util.UUID;
 @Transactional
 public class OrderService {
 
+    private final DominioService dominioService;
+
     private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
     private final OrderRepository repo;
@@ -66,7 +69,9 @@ public class OrderService {
                         CouponService couponService, AdminUserRepository adminUsers,
                         SiteSettingsService siteSettingsService, MercadoPagoService mercadoPagoService,
                         AppProperties appProperties, OrderMailService orderMailService,
-                        ArcaInvoiceService arcaInvoiceService, com.saasweb.core.service.InvoiceMailService invoiceMailService) {
+                        ArcaInvoiceService arcaInvoiceService, com.saasweb.core.service.InvoiceMailService invoiceMailService,
+                        DominioService dominioService) {
+        this.dominioService = dominioService;
         this.orderMailService = orderMailService;
         this.repo = repo;
         this.productRepo = productRepo;
@@ -312,7 +317,8 @@ public class OrderService {
                 .toList();
 
         String backend = appProperties.getUrls().getBackend();
-        String frontend = appProperties.getUrls().getFrontend();
+        // Vuelta al dominio de la tienda (propio o subdominio), no a uno fijo del deploy.
+        String frontend = dominioService.urlPublica(order.getTenantId());
         String notificationUrl = backend + "/api/webhooks/mercadopago?tenantId=" + order.getTenantId();
         String returnBase = frontend + "/mis-pedidos?code=" + order.getCode();
 

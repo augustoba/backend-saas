@@ -48,7 +48,9 @@ public enum Permission {
     /** Ver el balance de ganancias (ventas - costo - gastos) y sus comparativas. */
     FINANCE_VIEW("Ver balance de ganancias"),
     /** Ver el historial de movimientos de stock. */
-    STOCK_MOVEMENTS_VIEW("Historial de movimientos de stock");
+    STOCK_MOVEMENTS_VIEW("Historial de movimientos de stock"),
+    /** Dominios propios de la tienda (alta, verificación de DNS, principal). */
+    DOMAINS_MANAGE("Dominios propios");
 
     private final String label;
 
