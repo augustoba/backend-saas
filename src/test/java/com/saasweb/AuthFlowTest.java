@@ -1,8 +1,8 @@
 package com.saasweb;
 
-import com.saasweb.core.admin.AdminUser;
-import com.saasweb.core.admin.AdminUserRepository;
-import com.saasweb.core.tenant.TenantService;
+import com.saasweb.core.model.AdminUser;
+import com.saasweb.core.repository.AdminUserRepository;
+import com.saasweb.core.service.TenantService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;

@@ -1,0 +1,11 @@
+package com.saasweb.core.repository;
+
+import com.saasweb.core.model.Plan;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface PlanRepository extends JpaRepository<Plan, String> {
+    Optional<Plan> findBySlug(String slug);
+}

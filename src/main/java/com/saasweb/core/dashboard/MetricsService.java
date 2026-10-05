@@ -1,6 +1,6 @@
 package com.saasweb.core.dashboard;
 
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.dashboard.MetricsDtos.ComparisonResponse;
 import com.saasweb.core.dashboard.MetricsDtos.GroupBreakdown;
 import com.saasweb.core.dashboard.MetricsDtos.GroupRow;

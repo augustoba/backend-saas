@@ -1,6 +1,6 @@
 package com.saasweb.core.product;
 
-import com.saasweb.common.ResourceNotFoundException;
+import com.saasweb.core.common.ResourceNotFoundException;
 import com.saasweb.core.PageResponse;
 import com.saasweb.core.product.ProductDtos.ActivePatch;
 import com.saasweb.core.product.ProductDtos.DiscontinuedPatch;

@@ -1,7 +1,7 @@
 package com.saasweb.core.supplier;
 
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.supplier.SupplierDtos.SupplierRequest;
 import com.saasweb.core.supplier.Supplier;
 import com.saasweb.core.supplier.SupplierRepository;

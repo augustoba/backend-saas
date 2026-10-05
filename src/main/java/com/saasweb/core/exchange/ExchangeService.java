@@ -1,14 +1,14 @@
 package com.saasweb.core.exchange;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.exchange.ExchangeDtos.CreateExchangeRequest;
 import com.saasweb.core.exchange.ExchangeDtos.ExchangeItem;
 import com.saasweb.core.exchange.Exchange;
 import com.saasweb.core.exchange.ExchangeLine;
 import com.saasweb.core.product.Product;
-import com.saasweb.core.admin.AdminUserRepository;
+import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.core.exchange.ExchangeRepository;
 import com.saasweb.core.product.ProductRepository;
 import com.saasweb.core.product.ProductService;

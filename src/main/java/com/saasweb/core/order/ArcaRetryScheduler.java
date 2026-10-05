@@ -1,9 +1,9 @@
 package com.saasweb.core.order;
 
-import com.saasweb.common.TenantContext;
-import com.saasweb.core.settings.SiteSettingsService;
-import com.saasweb.core.tenant.Tenant;
-import com.saasweb.core.tenant.TenantRepository;
+import com.saasweb.core.common.TenantContext;
+import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.model.Tenant;
+import com.saasweb.core.repository.TenantRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

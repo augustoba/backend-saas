@@ -1,7 +1,7 @@
 package com.saasweb.core.page;
 
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

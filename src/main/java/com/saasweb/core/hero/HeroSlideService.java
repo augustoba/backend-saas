@@ -1,7 +1,7 @@
 package com.saasweb.core.hero;
 
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.hero.HeroSlideDtos.SlideRequest;
 import com.saasweb.core.hero.HeroSlide;
 import com.saasweb.core.hero.HeroSlideRepository;

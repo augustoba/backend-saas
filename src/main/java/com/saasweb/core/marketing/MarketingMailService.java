@@ -1,9 +1,9 @@
 package com.saasweb.core.marketing;
 
 import com.saasweb.core.marketing.MarketingConfig;
-import com.saasweb.core.settings.SiteSettingsService;
-import com.saasweb.platform.PlatformMailSettings;
-import com.saasweb.platform.PlatformMailSettingsService;
+import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.model.PlatformMailSettings;
+import com.saasweb.core.service.PlatformMailSettingsService;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSenderImpl;

@@ -1,8 +1,8 @@
 package com.saasweb.core.coupon;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.coupon.CouponDtos.CouponCheckResponse;
 import com.saasweb.core.coupon.CouponDtos.CouponRequest;
 import com.saasweb.core.coupon.Coupon;

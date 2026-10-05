@@ -1,8 +1,8 @@
 package com.saasweb.core.discount;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.discount.DiscountDtos.BreakdownLine;
 import com.saasweb.core.discount.DiscountDtos.CartDiscountResult;
 import com.saasweb.core.discount.DiscountDtos.DiscountRequest;

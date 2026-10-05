@@ -1,11 +1,11 @@
 package com.saasweb.core.product;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
-import com.saasweb.core.admin.AdminUserRepository;
-import com.saasweb.core.plan.Plan;
-import com.saasweb.core.plan.PlanService;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
+import com.saasweb.core.repository.AdminUserRepository;
+import com.saasweb.core.model.Plan;
+import com.saasweb.core.service.PlanService;
 import com.saasweb.core.product.ProductDtos.ProductRequest;
 import com.saasweb.core.product.ProductDtos.SizeStockDto;
 import com.saasweb.core.product.Product;

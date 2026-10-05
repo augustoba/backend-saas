@@ -1,6 +1,6 @@
 package com.saasweb.core.dashboard;
 
-import com.saasweb.common.BadRequestException;
+import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.dashboard.MetricsDtos.ComparisonResponse;
 import com.saasweb.core.dashboard.MetricsDtos.MetricsResponse;
 import com.saasweb.core.dashboard.MetricsService;

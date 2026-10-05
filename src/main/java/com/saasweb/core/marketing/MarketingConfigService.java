@@ -1,7 +1,7 @@
 package com.saasweb.core.marketing;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.marketing.MarketingDtos.MarketingConfigRequest;
 import com.saasweb.core.marketing.MarketingConfig;
 import com.saasweb.core.marketing.MarketingConfigRepository;

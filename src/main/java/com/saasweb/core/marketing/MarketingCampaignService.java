@@ -1,6 +1,6 @@
 package com.saasweb.core.marketing;
 
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.coupon.CouponDtos.CouponRequest;
 import com.saasweb.core.marketing.MarketingDtos.CandidatePreview;
 import com.saasweb.core.marketing.MarketingDtos.PreviewResult;

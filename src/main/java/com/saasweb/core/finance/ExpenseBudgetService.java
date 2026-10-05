@@ -1,7 +1,7 @@
 package com.saasweb.core.finance;
 
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.finance.ExpenseBudgetDtos.BudgetRequest;
 import com.saasweb.core.finance.ExpenseBudgetDtos.BudgetStatus;
 import org.springframework.stereotype.Service;

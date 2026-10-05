@@ -2,10 +2,10 @@ package com.saasweb;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.order.Order;
 import com.saasweb.core.order.OrderService;
-import com.saasweb.core.tenant.TenantService;
+import com.saasweb.core.service.TenantService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

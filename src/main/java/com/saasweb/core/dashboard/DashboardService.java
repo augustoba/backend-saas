@@ -1,6 +1,6 @@
 package com.saasweb.core.dashboard;
 
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.dashboard.DashboardDtos.DashboardResponse;
 import com.saasweb.core.dashboard.DashboardDtos.LowStockItem;
 import com.saasweb.core.dashboard.DashboardDtos.MonthSummary;

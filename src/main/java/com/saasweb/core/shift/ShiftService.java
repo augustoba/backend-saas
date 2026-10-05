@@ -1,12 +1,12 @@
 package com.saasweb.core.shift;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
-import com.saasweb.core.admin.AdminUser;
-import com.saasweb.core.admin.Permission;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
+import com.saasweb.core.model.AdminUser;
+import com.saasweb.core.model.Permission;
 import com.saasweb.core.shift.Shift;
-import com.saasweb.core.admin.AdminUserRepository;
+import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.core.shift.ShiftRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

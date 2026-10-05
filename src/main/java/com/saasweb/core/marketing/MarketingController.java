@@ -5,7 +5,7 @@ import com.saasweb.core.marketing.MarketingDtos.MarketingConfigResponse;
 import com.saasweb.core.marketing.MarketingDtos.MarketingSendResponse;
 import com.saasweb.core.marketing.MarketingDtos.PreviewResult;
 import com.saasweb.core.marketing.MarketingDtos.RunResult;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.PageResponse;
 import com.saasweb.core.marketing.MarketingSend;
 import com.saasweb.core.marketing.MarketingSendRepository;

@@ -1,8 +1,8 @@
 package com.saasweb.core.order;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.discount.DiscountDtos.CartDiscountResult;
 import com.saasweb.core.order.OrderDtos.CartItem;
 import com.saasweb.core.order.OrderDtos.CreateOrderRequest;
@@ -13,20 +13,20 @@ import com.saasweb.core.order.OrderLine;
 import com.saasweb.core.order.OrderStatus;
 import com.saasweb.core.product.Product;
 import com.saasweb.core.product.ProductParam;
-import com.saasweb.core.admin.AdminUserRepository;
+import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.core.order.OrderRepository;
 import com.saasweb.core.product.ProductRepository;
 import com.saasweb.core.discount.DiscountService.CartLineInput;
 import com.saasweb.core.discount.DiscountService;
 import com.saasweb.core.coupon.CouponService;
-import com.saasweb.core.payment.MercadoPagoService;
-import com.saasweb.core.payment.MercadoPagoService.PreferenceItem;
-import com.saasweb.core.payment.MercadoPagoService.PreferenceResult;
-import com.saasweb.core.arca.ArcaInvoiceService;
+import com.saasweb.core.service.MercadoPagoService;
+import com.saasweb.core.service.MercadoPagoService.PreferenceItem;
+import com.saasweb.core.service.MercadoPagoService.PreferenceResult;
+import com.saasweb.core.service.ArcaInvoiceService;
 import com.saasweb.core.product.ProductService;
-import com.saasweb.core.settings.SiteSettings;
-import com.saasweb.core.settings.SiteSettingsService;
-import com.saasweb.config.AppProperties;
+import com.saasweb.core.model.SiteSettings;
+import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.config.AppProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -59,14 +59,14 @@ public class OrderService {
     private final AppProperties appProperties;
     private final OrderMailService orderMailService;
     private final ArcaInvoiceService arcaInvoiceService;
-    private final com.saasweb.core.arca.InvoiceMailService invoiceMailService;
+    private final com.saasweb.core.service.InvoiceMailService invoiceMailService;
 
     public OrderService(OrderRepository repo, ProductRepository productRepo,
                         ProductService productService, DiscountService discountService,
                         CouponService couponService, AdminUserRepository adminUsers,
                         SiteSettingsService siteSettingsService, MercadoPagoService mercadoPagoService,
                         AppProperties appProperties, OrderMailService orderMailService,
-                        ArcaInvoiceService arcaInvoiceService, com.saasweb.core.arca.InvoiceMailService invoiceMailService) {
+                        ArcaInvoiceService arcaInvoiceService, com.saasweb.core.service.InvoiceMailService invoiceMailService) {
         this.orderMailService = orderMailService;
         this.repo = repo;
         this.productRepo = productRepo;
@@ -510,7 +510,7 @@ public class OrderService {
      * cada alícuota — simplificación deliberada: no hay forma de saber en
      * qué línea "cayó" el descuento, así que se reparte proporcional a todas.
      */
-    private java.util.List<com.saasweb.core.arca.ArcaInvoiceService.InvoiceLine> invoiceLinesFor(Order order) {
+    private java.util.List<com.saasweb.core.service.ArcaInvoiceService.InvoiceLine> invoiceLinesFor(Order order) {
         java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
         java.util.List<java.math.BigDecimal[]> raw = new java.util.ArrayList<>(); // [amount, ivaRate]
         for (OrderLine l : order.getLines()) {
@@ -525,10 +525,10 @@ public class OrderService {
         java.math.BigDecimal ratio = subtotal.signum() == 0 ? java.math.BigDecimal.ONE
                 : total.divide(subtotal, 6, java.math.RoundingMode.HALF_UP);
 
-        java.util.List<com.saasweb.core.arca.ArcaInvoiceService.InvoiceLine> lines = new java.util.ArrayList<>();
+        java.util.List<com.saasweb.core.service.ArcaInvoiceService.InvoiceLine> lines = new java.util.ArrayList<>();
         for (java.math.BigDecimal[] r : raw) {
             java.math.BigDecimal scaled = r[0].multiply(ratio).setScale(2, java.math.RoundingMode.HALF_UP);
-            lines.add(new com.saasweb.core.arca.ArcaInvoiceService.InvoiceLine(scaled, r[1]));
+            lines.add(new com.saasweb.core.service.ArcaInvoiceService.InvoiceLine(scaled, r[1]));
         }
         return lines;
     }

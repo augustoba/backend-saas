@@ -1,6 +1,6 @@
 package com.saasweb.core.shift;
 
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.shift.CashRegisterDtos.CashRegisterResponse;
 import com.saasweb.core.shift.CashRegisterDtos.MethodRow;
 import com.saasweb.core.exchange.Exchange;

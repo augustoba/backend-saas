@@ -1,9 +1,9 @@
 package com.saasweb.core.param;
 
-import com.saasweb.common.BadRequestException;
-import com.saasweb.common.ResourceNotFoundException;
-import com.saasweb.common.Slugs;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.common.ResourceNotFoundException;
+import com.saasweb.core.common.Slugs;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.param.ParamDtos.GroupRequest;
 import com.saasweb.core.param.ParamDtos.OptionRequest;
 import com.saasweb.core.param.ParamGroup;

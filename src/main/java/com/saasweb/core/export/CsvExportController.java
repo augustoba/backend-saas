@@ -1,7 +1,7 @@
 package com.saasweb.core.export;
 
-import com.saasweb.common.Csv;
-import com.saasweb.common.TenantContext;
+import com.saasweb.core.common.Csv;
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.exchange.Exchange;
 import com.saasweb.core.exchange.ExchangeLine;
 import com.saasweb.core.marketing.MarketingSend;

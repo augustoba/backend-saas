@@ -1,8 +1,8 @@
 package com.saasweb.core.finance;
 
-import com.saasweb.common.TenantContext;
-import com.saasweb.core.tenant.Tenant;
-import com.saasweb.core.tenant.TenantRepository;
+import com.saasweb.core.common.TenantContext;
+import com.saasweb.core.model.Tenant;
+import com.saasweb.core.repository.TenantRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 

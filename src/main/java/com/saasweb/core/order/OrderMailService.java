@@ -1,7 +1,7 @@
 package com.saasweb.core.order;
 
-import com.saasweb.core.settings.SiteSettingsService;
-import com.saasweb.platform.PlatformMailSettingsService;
+import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.service.PlatformMailSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.SimpleMailMessage;
