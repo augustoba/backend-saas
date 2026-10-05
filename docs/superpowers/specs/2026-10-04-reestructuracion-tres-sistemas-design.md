@@ -237,8 +237,19 @@ actualiza esta sección.
       **Pasan a la Etapa 2 (a propósito):** sacar del pedido los campos `invoice*`
       y `mp*` y el cobro de Mercado Pago (`core_cobro_mp` + evento). El pedido se
       rehace como `ec_pedido` en esa etapa; hacerlo ahora sería migrarlo dos veces.
-- [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
-- [ ] Verificado: el superadmin crea un tenant de cada sistema y cada uno ve su menú
+- [x] **1g** Front del núcleo (front `3e4f873`): `sistema` en settings/tiendas/planes;
+      menú del panel filtrado por sistema (arregla que ARCA sólo se veía en POS);
+      pantalla `/admin/config/dominios`; asistente "Crear tienda" con selector de
+      sistema (filtra planes) y administrador inicial. Proxy de `ng serve` con
+      `changeOrigin: false` para probar subdominios (`<slug>.localhost:4200`).
+- [x] Verificado (Playwright headless con el Chrome instalado, sin errores de
+      consola): superadmin ve dominios, tiendas con su sistema y el asistente
+      filtra planes por sistema; el admin de una tienda **restaurante** entra por
+      `parrilla-prueba.localhost:4200` y ve sólo lo del núcleo; el admin del
+      ecommerce piloto ve su menú completo.
+- [ ] Pendiente para las etapas 3/4: el asistente sigue mostrando el paso de
+      diseño de tienda online aunque el sistema sea POS o restaurante.
+- [ ] Servicio de imágenes intercambiable (ver arriba).
 
 ### Etapa 2 — Ecommerce ⏳
 - [ ] Mover a `ecommerce/` con tablas `ec_`; talle → variante
@@ -272,4 +283,5 @@ actualiza esta sección.
 | 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back `8259da5` |
 | 2026-10-04 | 1d: admin inicial en el alta de tienda | back `ab9d9d9` |
 | 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back `a76b6fa` |
-| 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back (ver git log) |
+| 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back `933616e` |
+| 2026-10-04 | 1g: panel según el sistema, dominios, asistente con sistema + admin | front `3e4f873` |
