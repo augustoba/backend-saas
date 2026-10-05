@@ -10,6 +10,21 @@ public final class SiteSettingsDtos {
 
     private SiteSettingsDtos() {}
 
+    /**
+     * Diseños de tienda que acepta el backend — tiene que coincidir con
+     * `LAYOUTS` del front (`admin-appearance.component.ts`, que incluye los de
+     * plantilla de `core/layouts.ts`): si un id falta acá, el PUT devuelve 400
+     * aunque el panel lo ofrezca. Lo reusa también `TenantAdminDtos`.
+     */
+    public static final String LAYOUT_PATTERN = "^$|^("
+            // Propios del SaaS (ramas del catálogo)
+            + "classic|minimal|boutique|curva|grid|mercado|astra|big-store|neve|oceanwp"
+            + "|orchid-store|shopper-store|sydney|woostify|studio"
+            // Plantillas con componente propio (traídas del ecommerce de Ruth)
+            + "|editorial|pop|vidriera|ofertas|fichero|mosaico|nova|neon|caramelo|cohete"
+            + "|jungla|crayon|atelier|feria|periodico|retro|suizo|cancha|cine|playa"
+            + ")$";
+
     /** Configuración de plataforma (identidad, logo, WhatsApp, redes, textos). Sólo superadmin. */
     public record PlatformSettingsRequest(
             @NotBlank String storeName,
@@ -37,7 +52,7 @@ public final class SiteSettingsDtos {
      * paleta con nombre de siempre (`brandColor`).
      */
     public record AppearanceRequest(
-            @Pattern(regexp = "^$|^(classic|minimal|boutique|curva|grid|mercado)$", message = "Diseño desconocido")
+            @Pattern(regexp = SiteSettingsDtos.LAYOUT_PATTERN, message = "Diseño desconocido")
             String layout,
             @Pattern(regexp = "^$|^#[0-9a-fA-F]{6}$", message = "Color inválido (formato #rrggbb)")
             String brandColor,

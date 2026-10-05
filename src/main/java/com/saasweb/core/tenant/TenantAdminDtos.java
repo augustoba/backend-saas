@@ -1,5 +1,6 @@
 package com.saasweb.core.tenant;
 
+import com.saasweb.core.settings.SiteSettingsDtos;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -20,7 +21,7 @@ public class TenantAdminDtos {
             @NotBlank @Pattern(regexp = "^[a-z0-9]+(-[a-z0-9]+)*$",
                     message = "El identificador sólo puede tener minúsculas, números y guiones.") String slug,
             @NotNull Rubro rubro,
-            @Pattern(regexp = "^$|^(classic|minimal|boutique|curva|grid|mercado)$", message = "Diseño desconocido")
+            @Pattern(regexp = SiteSettingsDtos.LAYOUT_PATTERN, message = "Diseño desconocido")
             String layout,
             @Pattern(regexp = "^$|^#[0-9a-fA-F]{6}$", message = "Color inválido (formato #rrggbb)")
             String brandColor,
