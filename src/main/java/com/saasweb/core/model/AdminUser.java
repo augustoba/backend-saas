@@ -10,7 +10,7 @@ import java.time.Instant;
  * contra esta tabla y devuelve un JWT.
  */
 @Entity
-@Table(name = "admin_user", uniqueConstraints = {
+@Table(name = "core_usuario", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"tenant_id", "dni"}),
         @UniqueConstraint(columnNames = {"tenant_id", "email"})
 })

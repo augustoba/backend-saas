@@ -275,7 +275,15 @@ actualiza esta sección.
       de settings idénticas a las de antes; 13 endpoints públicos y del panel en
       200; alta de una tienda ferretería (4 productos de ejemplo, colores del
       asistente aplicados) y su baja definitiva (no queda ninguna fila).
-- [ ] Tablas `ec_`; talle → variante
+- [x] **2.2a** Tablas con prefijo (V8 ecommerce, V9 núcleo), con los nombres del
+      spec: `ec_producto`, `ec_pedido`, `ec_pedido_linea`, `ec_cambio`, `ec_cupon`,
+      `ec_descuento`, `ec_config_tienda`, `ec_escala_talle`, etc.;
+      `core_usuario`, `core_rol`, `core_rol_permiso`, `core_mail_plataforma`. Sólo
+      cambia el nombre de la tabla. Verificado: 13 respuestas de la API (catálogo,
+      settings, roles, usuarios, gastos, proveedores, cupones, bloques, movimientos
+      de stock) idénticas antes y después; la base ya no tiene tablas sin prefijo.
+- [ ] **2.2b** Talle → variante (`ec_variante`, escalas de variantes, la línea del
+      pedido apunta a la variante) — cambia API y front
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -309,4 +317,5 @@ actualiza esta sección.
 | 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back `933616e` |
 | 2026-10-04 | 1g: panel según el sistema, dominios, asistente con sistema + admin | front `3e4f873` |
 | 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back `ace29d1`, front `70bbb68` |
-| 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back (ver git log) |
+| 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back `f3689f5` |
+| 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back (ver git log) |

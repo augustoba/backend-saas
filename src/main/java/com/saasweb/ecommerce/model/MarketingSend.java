@@ -7,7 +7,7 @@ import java.time.Instant;
 
 /** Registro de un envío (o intento de envío) de campaña de marketing a un email. */
 @Entity
-@Table(name = "marketing_send")
+@Table(name = "ec_marketing_envio")
 public class MarketingSend {
 
     public enum Reason { INACTIVE, VIP }

@@ -17,7 +17,7 @@ import java.time.Instant;
  * hace falta.</p>
  */
 @Entity
-@Table(name = "page_block")
+@Table(name = "ec_bloque_pagina")
 public class PageBlock {
 
     @Id

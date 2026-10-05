@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Escala de talle (ej: "Ropa niños", "Calzado adultos"). */
 @Entity
-@Table(name = "size_scale")
+@Table(name = "ec_escala_talle")
 public class SizeScale {
 
     @Id
@@ -27,7 +27,7 @@ public class SizeScale {
     private Instant createdAt = Instant.now();
 
     @ElementCollection
-    @CollectionTable(name = "size_scale_value", joinColumns = @JoinColumn(name = "scale_id"))
+    @CollectionTable(name = "ec_escala_talle_valor", joinColumns = @JoinColumn(name = "scale_id"))
     @OrderColumn(name = "idx")
     @Column(name = "size_value", nullable = false)
     private List<String> values = new ArrayList<>();

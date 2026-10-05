@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  * (no por mes), se compara contra el gasto del mes en curso (ítem 21).
  */
 @Entity
-@Table(name = "expense_budget", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "category_option_id"}))
+@Table(name = "ec_presupuesto_gasto", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "category_option_id"}))
 public class ExpenseBudget {
 
     @Id

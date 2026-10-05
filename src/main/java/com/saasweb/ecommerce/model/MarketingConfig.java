@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * manda nada para ese tenant (no-op seguro hasta cargar credenciales de mail reales).
  */
 @Entity
-@Table(name = "marketing_config")
+@Table(name = "ec_marketing_config")
 public class MarketingConfig {
 
     /** Id del tenant dueño de esta config. */

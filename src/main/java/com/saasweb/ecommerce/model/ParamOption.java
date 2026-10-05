@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 
 /** Opción dentro de un ParamGroup (ej: "Bebé", "Remera", "Verano"). */
 @Entity
-@Table(name = "param_option")
+@Table(name = "ec_param_opcion")
 public class ParamOption {
 
     @Id

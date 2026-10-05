@@ -8,7 +8,7 @@ import java.util.List;
 
 /** Grupo de parametría (ej: "Público", "Tipo de prenda", "Estación"). */
 @Entity
-@Table(name = "param_group")
+@Table(name = "ec_param_grupo")
 public class ParamGroup {
 
     @Id

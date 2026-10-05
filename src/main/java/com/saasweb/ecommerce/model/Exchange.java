@@ -15,7 +15,7 @@ import java.util.List;
  * cliente ({@code difference} negativo).
  */
 @Entity
-@Table(name = "exchange", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "number"}))
+@Table(name = "ec_cambio", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "number"}))
 public class Exchange {
 
     @Id

@@ -6,7 +6,7 @@ import java.time.Instant;
 
 /** Proveedor del local (info interna del admin). */
 @Entity
-@Table(name = "supplier")
+@Table(name = "ec_proveedor")
 public class Supplier {
 
     @Id

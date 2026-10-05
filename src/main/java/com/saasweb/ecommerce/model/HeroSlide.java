@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 
 /** Foto del carrusel de la home. */
 @Entity
-@Table(name = "hero_slide")
+@Table(name = "ec_carrusel")
 public class HeroSlide {
 
     @Id

@@ -14,7 +14,7 @@ import java.time.LocalDate;
  * {@code /admin/param-groups} como cualquier otra parametría.
  */
 @Entity
-@Table(name = "expense")
+@Table(name = "ec_gasto")
 public class Expense {
 
     @Id

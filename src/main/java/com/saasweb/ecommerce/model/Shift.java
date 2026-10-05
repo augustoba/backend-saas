@@ -13,7 +13,7 @@ import java.time.Instant;
  * mismo tiempo. Un usuario no puede tener dos turnos abiertos a la vez.
  */
 @Entity
-@Table(name = "shift")
+@Table(name = "ec_turno")
 public class Shift {
 
     @Id

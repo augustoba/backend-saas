@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "exchange_line")
+@Table(name = "ec_cambio_linea")
 public class ExchangeLine {
 
     /** DEVUELTA: vuelve al stock. LLEVADA: sale del stock. */

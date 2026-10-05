@@ -13,7 +13,7 @@ import java.time.Instant;
  * para que ningún caller se pueda olvidar.
  */
 @Entity
-@Table(name = "stock_movement")
+@Table(name = "ec_movimiento_stock")
 public class StockMovement {
 
     @Id

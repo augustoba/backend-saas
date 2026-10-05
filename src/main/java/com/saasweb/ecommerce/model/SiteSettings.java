@@ -11,7 +11,7 @@ import jakarta.persistence.*;
  * redesplegar nada.
  */
 @Entity
-@Table(name = "site_settings")
+@Table(name = "ec_config_tienda")
 public class SiteSettings {
 
     /** Id del tenant dueño de esta config (ver TenantService/SiteSettingsService.get()). */

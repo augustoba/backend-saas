@@ -15,7 +15,7 @@ import java.util.Set;
  * de permisos — ver {@code RoleService.ensureRole}.
  */
 @Entity
-@Table(name = "role", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "name"}))
+@Table(name = "core_rol", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "name"}))
 public class Role {
 
     @Id
@@ -33,7 +33,7 @@ public class Role {
     private boolean system = false;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"))
+    @CollectionTable(name = "core_rol_permiso", joinColumns = @JoinColumn(name = "role_id"))
     @Column(name = "permission", length = 40)
     private Set<String> permissions = new LinkedHashSet<>();
 

@@ -16,7 +16,7 @@ import java.time.LocalDate;
  * descuentos automáticos o si se aplica sólo el que más conviene.</p>
  */
 @Entity
-@Table(name = "coupon", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "code"}))
+@Table(name = "ec_cupon", uniqueConstraints = @UniqueConstraint(columnNames = {"tenant_id", "code"}))
 public class Coupon {
 
     public enum Kind { PERCENT, AMOUNT }

@@ -23,7 +23,7 @@ import java.util.Set;
  * Vigencia opcional (`startsAt` / `endsAt`, inclusivas).
  */
 @Entity
-@Table(name = "discount")
+@Table(name = "ec_descuento")
 public class Discount {
 
     public enum Kind { MONTO, PARAMETRO, PAGO, ENVIO_GRATIS }

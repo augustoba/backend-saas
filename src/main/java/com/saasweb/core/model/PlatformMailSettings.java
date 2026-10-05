@@ -9,7 +9,7 @@ import jakarta.persistence.*;
  * en otro deploy (otro ecommerce) se configura sin tocar el servidor.
  */
 @Entity
-@Table(name = "platform_mail_settings")
+@Table(name = "core_mail_plataforma")
 public class PlatformMailSettings {
 
     public static final String SINGLETON_ID = "config";
