@@ -367,7 +367,17 @@ actualiza esta sección.
 - [x] 35 diseños + Apariencia funcionando: los 35 aplicados uno por uno desde
       Apariencia (API del superadmin) renderizan home, `/promos` y ficha con su
       `data-layout`, sin errores de consola (Playwright contra MySQL; se restauró "classic").
-- [ ] Verificado: compra WhatsApp y MP, venta en local, cambio, factura ARCA de prueba
+- [x] Verificado en el navegador contra MySQL (Playwright), siguiendo el stock de
+      un producto de prueba (10 → 9 → 8 → 9), sin errores de consola:
+      - Compra por WhatsApp desde la tienda → pedido PENDIENTE (no descuenta) y se
+        abre WhatsApp → entregado desde el panel → PROCESADO, descuenta 1.
+      - Venta en el local en efectivo → recibo con "ticket interno", descuenta 1.
+      - Cambio como devolución pura → recibo "a favor del cliente", repone 1.
+- [ ] Mercado Pago y ARCA en vivo: **pendiente de credenciales de prueba** (ninguna
+      tienda tiene cargado access token de MP ni certificado de homologación de
+      ARCA). Hoy los cubren los tests automáticos (`OrderMercadoPagoConfirmTest`
+      simula el pago: cobro → evento → pedido; ARCA con su cliente simulado).
+      Con las credenciales de sandbox se prueba en minutos.
 
 ### Etapa 3 — POS ⏳
 - [ ] Artículos, venta rápida con lector, caja con arqueo, stock, gastos
@@ -406,3 +416,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.4a: lo nuevo de Ruth — devolución pura, promos, ajuste masivo, borrado definitivo, banner, Nosotros, WhatsApp flotante, título de pestaña (V14) | back `98314ff` + docs, front `9201944` |
 | 2026-10-05 | 2.4b: coordinar por WhatsApp tras MP, credenciales de Cloudinary, catálogo público sin datos internos ni galería (over-fetching) | back `c0184a2`, front `01ab41a` |
 | 2026-10-05 | Etapa 2: verificación de los 35 diseños (home, promos, ficha) | docs |
+| 2026-10-05 | Etapa 2: E2E de compra WhatsApp, venta en el local y cambio (MP y ARCA en vivo esperan credenciales de prueba) | docs, front `57a5f15` |
