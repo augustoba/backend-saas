@@ -213,8 +213,10 @@ actualiza esta sección.
         asignar** desde el ABM de roles (antes sí).
       - `/api/settings` y `/api/admin/tenants` devuelven `sistema` (se mantienen
         `posEnabled`/`ecommerceSiteEnabled`/`businessModel` derivados para el front actual).
-- [ ] Usuarios: alta del admin inicial de cada tienda desde el asistente (hoy sólo
-      la tienda piloto tiene admin; las demás sólo las maneja el superadmin)
+- [x] **1d** Admin inicial: el alta de tienda acepta un bloque opcional `admin`
+      (nombre, apellido, DNI, email, contraseña) y crea ese usuario con el rol
+      "Administrador" de la tienda. Entra por el dominio de SU tienda; el mismo DNI
+      no existe en otra. (Falta el paso en el asistente del front: va con el panel.)
 - [ ] Identidad + config ARCA/MP/mail/imágenes (servicio de imágenes intercambiable)
 - [ ] `core_comprobante` + `core_cobro_mp` con origen + evento de cobro
 - [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
@@ -249,4 +251,5 @@ actualiza esta sección.
 | 2026-10-04 | Etapa 0: Flyway (V1), paquetes por sistema, ArchUnit, chequeo de imports del front | back `c375799`, front `958168b` |
 | 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
 | 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back `5786850` |
-| 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back (ver git log) |
+| 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back `8259da5` |
+| 2026-10-04 | 1d: admin inicial en el alta de tienda | back (ver git log) |

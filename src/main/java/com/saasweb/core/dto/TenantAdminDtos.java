@@ -53,7 +53,20 @@ public class TenantAdminDtos {
              * Sistema de la tienda (ecommerce, POS o restaurante). Vacío = el
              * del plan elegido, o ecommerce (compat con el asistente actual).
              */
-            Sistema sistema) {
+            Sistema sistema,
+            /**
+             * Usuario "Administrador" con el que el dueño de la tienda entra a su
+             * panel. Opcional: sin él, la tienda sólo la puede manejar el superadmin.
+             */
+            @jakarta.validation.Valid AdminInicial admin) {
+    }
+
+    public record AdminInicial(
+            @NotBlank @jakarta.validation.constraints.Size(max = 100) String nombre,
+            @NotBlank @jakarta.validation.constraints.Size(max = 100) String apellido,
+            @NotBlank @jakarta.validation.constraints.Size(min = 6, max = 20) String dni,
+            @NotBlank @jakarta.validation.constraints.Email @jakarta.validation.constraints.Size(max = 200) String email,
+            @NotBlank @jakarta.validation.constraints.Size(min = 4, max = 100) String password) {
     }
 
     public record TenantResponse(String id, String slug, String name, Rubro rubro, String rubroLabel,

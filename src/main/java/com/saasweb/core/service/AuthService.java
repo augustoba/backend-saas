@@ -182,6 +182,28 @@ public class AuthService {
     }
 
     /**
+     * Primer usuario "Administrador" de una tienda recién creada (lo carga el
+     * asistente "Crear tienda"). El rol tiene que existir: se crea antes con
+     * los roles por defecto del sistema.
+     */
+    public AdminUser crearAdminInicial(String tenantId, String nombre, String apellido, String dni,
+                                       String email, String password) {
+        Role adminRole = roles.findByTenantIdAndNameIgnoreCase(tenantId, PermisoService.ADMINISTRADOR)
+                .orElseThrow(() -> new IllegalStateException("La tienda no tiene rol Administrador."));
+        AdminUser admin = new AdminUser();
+        admin.setId(UUID.randomUUID().toString());
+        admin.setTenantId(tenantId);
+        admin.setDni(dni.trim());
+        admin.setNombre(nombre.trim());
+        admin.setApellido(apellido.trim());
+        admin.setEmail(email.trim());
+        admin.setPasswordHash(passwordEncoder.encode(password));
+        admin.setEnabled(true);
+        admin.setRole(adminRole);
+        return users.save(admin);
+    }
+
+    /**
      * Crea la cuenta inicial del superadmin (dueño de la plataforma) si no
      * existe, con el rol system (todos los permisos siempre) y el flag
      * {@code superAdmin=true} (acceso aparte a Cloudinary/mail, ver

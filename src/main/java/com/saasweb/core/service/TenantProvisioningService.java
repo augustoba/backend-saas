@@ -68,11 +68,14 @@ public class TenantProvisioningService {
     private final PageBlockService pageBlockService;
     private final HeroSlideRepository heroSlideRepo;
     private final RoleService roleService;
+    private final AuthService authService;
 
     public TenantProvisioningService(TenantService tenantService, ParamRepository paramRepo,
                                      SizeScaleRepository sizeScaleRepo, ProductRepository productRepo,
                                      SiteSettingsService siteSettingsService, PageBlockService pageBlockService,
-                                     HeroSlideRepository heroSlideRepo, RoleService roleService) {
+                                     HeroSlideRepository heroSlideRepo, RoleService roleService,
+                                     AuthService authService) {
+        this.authService = authService;
         this.roleService = roleService;
         this.tenantService = tenantService;
         this.paramRepo = paramRepo;
@@ -85,7 +88,7 @@ public class TenantProvisioningService {
 
     public Tenant provision(String name, String slug, Rubro rubro) {
         return provision(new TenantCreateRequest(
-                name, slug, rubro, null, null, null, null, null, null, null, null, null, null, null, null, null));
+                name, slug, rubro, null, null, null, null, null, null, null, null, null, null, null, null, null, null));
     }
 
     /**
@@ -102,6 +105,10 @@ public class TenantProvisioningService {
         String tenantId = tenant.getId();
         // Roles con los que nace la tienda según su sistema ("Administrador" + los del sistema).
         roleService.ensureRolesPorDefecto(tenantId, tenant.getSistema());
+        if (req.admin() != null) {
+            var a = req.admin();
+            authService.crearAdminInicial(tenantId, a.nombre(), a.apellido(), a.dni(), a.email(), a.password());
+        }
 
         String layout = blankToNull(req.layout()) != null ? req.layout() : rubro.getDefaultLayout();
         siteSettingsService.createFor(tenantId, req.name().trim(), rubro.getDefaultTheme(), layout,

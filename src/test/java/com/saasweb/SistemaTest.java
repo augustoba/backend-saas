@@ -3,6 +3,7 @@ package com.saasweb;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saasweb.core.common.BadRequestException;
+import com.saasweb.core.dto.TenantAdminDtos.AdminInicial;
 import com.saasweb.core.dto.TenantAdminDtos.TenantCreateRequest;
 import com.saasweb.core.model.Rubro;
 import com.saasweb.core.model.Sistema;
@@ -42,7 +43,7 @@ class SistemaTest {
     private Tenant alta(Sistema sistema, String planId) {
         String slug = "t-" + UUID.randomUUID().toString().substring(0, 8);
         return provisioning.provision(new TenantCreateRequest("Tienda " + sistema, slug, Rubro.ROPA,
-                null, null, null, null, null, null, null, null, null, null, null, planId, sistema));
+                null, null, null, null, null, null, null, null, null, null, null, planId, sistema, null));
     }
 
     private List<String> permisosDelRol(Tenant t, String rol) {
@@ -92,6 +93,24 @@ class SistemaTest {
                 .andExpect(jsonPath("$.sistema").value("ECOMMERCE"))
                 .andExpect(jsonPath("$.ecommerceSiteEnabled").value(true))
                 .andExpect(jsonPath("$.posEnabled").value(false));
+    }
+
+    @Test
+    void laTiendaNaceConSuAdminQueEntraPorSuDominio() throws Exception {
+        String slug = "t-" + UUID.randomUUID().toString().substring(0, 8);
+        String dni = String.valueOf(20000000 + (int) (Math.random() * 9_000_000));
+        provisioning.provision(new TenantCreateRequest("Con admin", slug, Rubro.ROPA,
+                null, null, null, null, null, null, null, null, null, null, null, null, Sistema.POS,
+                new AdminInicial("Ana", "Pérez", dni, "ana@" + slug + ".com", "clave123")));
+
+        String login = "{\"dni\":\"" + dni + "\",\"password\":\"clave123\"}";
+        // Entra por el subdominio de SU tienda (el panel sigue andando aunque sea POS)...
+        mvc.perform(post("/api/auth/login").with(r -> { r.setServerName(slug + ".localhost"); return r; })
+                        .contentType(MediaType.APPLICATION_JSON).content(login))
+                .andExpect(status().isOk());
+        // ...pero ese DNI no existe en la tienda piloto.
+        mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(login))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
