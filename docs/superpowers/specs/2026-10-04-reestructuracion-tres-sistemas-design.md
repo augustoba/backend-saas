@@ -183,7 +183,7 @@ actualiza esta sección.
   parte se reescribe; el código del ecommerce que hoy vive en `core/` se muda
   en la Etapa 2.
 
-### Etapa 1 — Núcleo ⏳ (en curso)
+### Etapa 1 — Núcleo ✅ (2026-10-04)
 - [x] **1a** Núcleo reordenado por capa: `core/{controller,service,repository,model,dto}`
       con tenant, usuarios/roles, auth, planes, settings, ARCA, Mercado Pago y mail de
       plataforma; `config/` y `common/` pasan a `core/`. Movimiento mecánico, sin lógica nueva.
@@ -228,8 +228,6 @@ actualiza esta sección.
       mail, alertas, y la de otra tienda) quedaron **byte por byte idénticas**
       antes y después de la migración; editar la identidad escribe en
       `core_identidad` y los textos de la tienda en `site_settings`.
-- [ ] Servicio de imágenes intercambiable (hoy el front sube directo a Cloudinary
-      con el preset; falta la interfaz del núcleo para poder pasar a R2)
 - [x] **1f** `core_comprobante` (V6) con origen (sistema + id, sin FK) y clase
       FACTURA / NOTA_CREDITO; `ComprobanteService.registrar/deOrigen`. Las notas
       de crédito ya viven ahí (`credit_note` migrada y borrada; la API
@@ -247,9 +245,18 @@ actualiza esta sección.
       filtra planes por sistema; el admin de una tienda **restaurante** entra por
       `parrilla-prueba.localhost:4200` y ve sólo lo del núcleo; el admin del
       ecommerce piloto ve su menú completo.
+- [x] **1h** Servicio de imágenes intercambiable: `ProveedorImagenes` (hoy
+      `CloudinaryImagenes`; R2 = otra implementación con PUT prefirmado),
+      `core_config_imagenes.proveedor` (V7) y `POST /api/core/imagenes/subidas`
+      que devuelve el ticket. El front (`ImagenService`, front `70bbb68`) sube según
+      el ticket, sin saber el proveedor. **Arregla** que todas las tiendas subían a
+      la carpeta `estilos-pequenos/…`: ahora la carpeta siempre va debajo del slug
+      de la tienda (sólo el superadmin puede apuntar a otra, para el logo del
+      asistente). Verificado: el restaurante de prueba recibe `parrilla-prueba/carta`
+      y la piloto `estilos-pequenos/productos`. No se subió una foto real (la cuenta
+      configurada es la de producción de la piloto).
 - [ ] Pendiente para las etapas 3/4: el asistente sigue mostrando el paso de
       diseño de tienda online aunque el sistema sea POS o restaurante.
-- [ ] Servicio de imágenes intercambiable (ver arriba).
 
 ### Etapa 2 — Ecommerce ⏳
 - [ ] Mover a `ecommerce/` con tablas `ec_`; talle → variante
@@ -285,3 +292,4 @@ actualiza esta sección.
 | 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back `a76b6fa` |
 | 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back `933616e` |
 | 2026-10-04 | 1g: panel según el sistema, dominios, asistente con sistema + admin | front `3e4f873` |
+| 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back (ver git log), front `70bbb68` |

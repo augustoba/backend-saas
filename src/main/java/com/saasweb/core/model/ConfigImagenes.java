@@ -13,6 +13,10 @@ public class ConfigImagenes {
     @Id
     private String id;
 
+    /** Proveedor de las fotos (ver {@code ProveedorImagenes}); hoy sólo "CLOUDINARY". */
+    @Column(nullable = false, length = 20)
+    private String proveedor = "CLOUDINARY";
+
     @Column(length = 200)
     private String cloudinaryCloudName;
 
@@ -21,6 +25,8 @@ public class ConfigImagenes {
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+    public String getProveedor() { return proveedor; }
+    public void setProveedor(String proveedor) { this.proveedor = proveedor; }
     public String getCloudinaryCloudName() { return cloudinaryCloudName; }
     public void setCloudinaryCloudName(String cloudinaryCloudName) { this.cloudinaryCloudName = cloudinaryCloudName; }
     public String getCloudinaryUploadPreset() { return cloudinaryUploadPreset; }
