@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 
 /** A quién le compra mercadería el kiosco. */
-@Entity
+@Entity(name = "PosProveedor")
 @Table(name = "pos_proveedor")
 public class Proveedor {
 

@@ -4,7 +4,6 @@ import com.saasweb.core.model.Tenant;
 import com.saasweb.core.service.AuthService;
 import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.service.PermisoService;
-import com.saasweb.core.service.PermisosNucleo;
 import com.saasweb.core.service.PlanService;
 import com.saasweb.core.service.RoleService;
 import com.saasweb.core.service.TenantService;
@@ -29,9 +28,11 @@ public class DataSeeder implements CommandLineRunner {
     private final RoleService roleService;
     private final AuthService authService;
     private final ConfiguracionService configuracion;
+    private final PermisoService permisoService;
 
     public DataSeeder(TenantService tenantService, PlanService planService, RoleService roleService,
-                      AuthService authService, ConfiguracionService configuracion) {
+                      AuthService authService, ConfiguracionService configuracion, PermisoService permisoService) {
+        this.permisoService = permisoService;
         this.tenantService = tenantService;
         this.planService = planService;
         this.roleService = roleService;
@@ -60,14 +61,16 @@ public class DataSeeder implements CommandLineRunner {
     }
 
     /**
-     * {@code ensureRolesPorDefecto} no retoca roles ya existentes: los permisos
-     * que se suman después del primer arranque de una tienda se agregan acá (sin
-     * efecto si ya los tiene o si no aplican a su sistema).
+     * {@code ensureRolesPorDefecto} no retoca roles ya existentes: el
+     * "Administrador" de cada tienda recibe acá todo permiso de su sistema que
+     * todavía no tenga (los que se suman en versiones nuevas, o un sistema que
+     * recién se portó, como el restaurante).
      */
     private void backfillNewPermissions() {
         for (Tenant t : tenantService.findAll()) {
-            roleService.grantPermissionsIfMissing(t.getId(), t.getSistema(), PermisoService.ADMINISTRADOR,
-                    Set.of("EXPENSES_MANAGE", "FINANCE_VIEW", "STOCK_MOVEMENTS_VIEW", PermisosNucleo.DOMAINS_MANAGE));
+            Set<String> todos = new java.util.HashSet<>();
+            permisoService.asignables(t.getSistema()).forEach(p -> todos.add(p.clave()));
+            roleService.grantPermissionsIfMissing(t.getId(), t.getSistema(), PermisoService.ADMINISTRADOR, todos);
         }
     }
 }

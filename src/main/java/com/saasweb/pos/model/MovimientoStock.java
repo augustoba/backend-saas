@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /** Cada cambio de stock de un artículo, con el stock que quedó (historial auditable). */
-@Entity
+@Entity(name = "PosMovimientoStock")
 @Table(name = "pos_movimiento_stock")
 public class MovimientoStock {
 

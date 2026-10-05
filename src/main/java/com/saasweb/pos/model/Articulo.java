@@ -10,7 +10,7 @@ import java.time.Instant;
  * del ecommerce). El stock puede quedar negativo: vender sin stock registrado
  * está permitido (ver spec §5.1).
  */
-@Entity
+@Entity(name = "PosArticulo")
 @Table(name = "pos_articulo")
 public class Articulo {
 

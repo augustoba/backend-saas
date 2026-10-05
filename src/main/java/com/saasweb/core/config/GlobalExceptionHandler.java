@@ -30,6 +30,17 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage(), null);
     }
 
+    @ExceptionHandler(com.saasweb.core.common.ConflictException.class)
+    public ResponseEntity<ApiError> conflict(com.saasweb.core.common.ConflictException ex) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), null);
+    }
+
+    /** Falta un parámetro obligatorio de la URL (ej: ?fecha=): es un error del pedido, no del servidor. */
+    @ExceptionHandler(org.springframework.web.bind.MissingServletRequestParameterException.class)
+    public ResponseEntity<ApiError> missingParam(org.springframework.web.bind.MissingServletRequestParameterException ex) {
+        return build(HttpStatus.BAD_REQUEST, "Falta el parámetro '" + ex.getParameterName() + "'.", null);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> validation(MethodArgumentNotValidException ex) {
         Map<String, String> fields = new HashMap<>();

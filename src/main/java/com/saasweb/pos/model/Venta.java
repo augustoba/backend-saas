@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Un ticket del mostrador. Las líneas guardan la foto de nombre, precio e IVA del artículo. */
-@Entity
+@Entity(name = "PosVenta")
 @Table(name = "pos_venta")
 public class Venta {
 

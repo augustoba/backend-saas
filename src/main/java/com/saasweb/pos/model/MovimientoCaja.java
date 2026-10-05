@@ -6,7 +6,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 /** Ingreso o egreso manual de efectivo durante el turno (retiro, cambio, pago a un proveedor). */
-@Entity
+@Entity(name = "PosMovimientoCaja")
 @Table(name = "pos_movimiento_caja")
 public class MovimientoCaja {
 

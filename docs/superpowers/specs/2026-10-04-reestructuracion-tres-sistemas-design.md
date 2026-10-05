@@ -460,8 +460,35 @@ actualiza esta sección.
       simulado: falla, reintento con CAE, anulación con nota de crédito); en vivo
       espera credenciales de homologación, igual que el ecommerce.
 
-### Etapa 4 — Restaurante ⏳
-- [ ] Portar back + front sobre el núcleo, tablas `rs_`
+### Etapa 4 — Restaurante ⏳ (en curso)
+- [x] **4a** Backend portado (130 clases de `C:\proyectos\restaurante` a
+      `com.saasweb.restaurante.{controller,service,repository,model,dto}` con un script:
+      paquetes por capa, `tenantId` = la tienda del núcleo (`TenantContext`), URLs
+      `/api/restaurante/**` y lo público (carta, autopedido, pedido online) en
+      `/api/public/restaurante/**`, tablas `rs_`). Sin sus usuarios/roles/JWT: quien
+      opera es un `Usuario` liviano tomado del usuario del núcleo (resolver por DNI de
+      la sesión); órdenes, pagos y arqueos guardan su id (y el nombre como foto).
+      - Esquema: V18 (34 tablas `rs_` generadas desde el mapeo JPA para MySQL, enums
+        como varchar, índices por tienda) + V19 (tabla intermedia producto ↔ modificadores
+        que había quedado sin prefijo). Validado por Hibernate contra MySQL.
+      - Alta: `InicializadorRestaurante` (el seeder original: sucursal, sectores, salones
+        con mesas, medios de pago, gastos, clientes, proveedores, carta, cajas,
+        modificadores, listas de precio, turnos de reserva); `SeedRestaurante` siembra
+        los restaurantes existentes ("La Parrilla Prueba"); `LimpiezaRestaurante` en la baja.
+      - Permisos: el catálogo original en `PermisosRestaurante` + roles Encargado,
+        Cajero, Recepción y Mozo. El "Administrador" de cada tienda recibe al arrancar
+        todo permiso nuevo de su sistema (antes era una lista fija).
+      - **Arreglos del port:** la carta pública buscaba el slug en todas las tiendas
+        (ahora sólo en la del dominio); los nombres repetidos entre POS y restaurante
+        (`CajaService`, `Caja`...) se resuelven con `SistemaBeanNameGenerator` (beans
+        `posX`/`restauranteX`), entidades del POS `PosX` y repositorios del POS con nombre.
+      - **Núcleo:** las URLs `/api/<sistema>/**` y `/api/public/<sistema>/**` sólo existen
+        para tiendas de ese sistema (404 `no_disponible`); `ConflictException` (409);
+        falta de parámetro = 400. Tests en H2 con identificadores en minúscula (como MySQL).
+      - Verificado: RestauranteTest (alta sembrada → caja → mesa → pedido → cocina →
+        cobro PAGADO → carta pública sólo por su dominio → otra tienda no ve sus
+        órdenes → baja limpia), 69/69; contra MySQL las pantallas de La Parrilla responden.
+- [ ] **4b** Front del restaurante (`src/app/restaurante/`)
 - [ ] Verificado: comanda en mesa → KDS → cobro → factura; carta online y reservas
 
 ### Etapa 5 — Despliegue ⏳
@@ -497,4 +524,5 @@ actualiza esta sección.
 | 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back `a0b1b82` |
 | 2026-10-05 | 3b: caja con arqueo y ventas del POS con factura y anulación (V16) | back `599b990` |
 | 2026-10-05 | 3c: gastos, proveedores y reporte de resultados del POS (V17) | back `81a4024` |
-| 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back (ver git log), front `24e14ea` |
+| 2026-10-05 | 3d: pantallas del POS, POS sin sitio público, asistente sin diseño para POS/restaurante | back `1ce9b45`, front `24e14ea` |
+| 2026-10-05 | 4a: backend del restaurante portado sobre el núcleo (V18, V19) | back (ver git log) |

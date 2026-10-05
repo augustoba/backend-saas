@@ -15,14 +15,18 @@ import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
-/** Un punto de venta nuevo para un test: su subdominio y el token de su administrador. */
+/** Una tienda nueva de un sistema para un test (POS por defecto): su subdominio y el token de su administrador. */
 record PosPrueba(String slug, String token, MockMvc mvc) {
 
     static PosPrueba nuevo(TenantProvisioningService provisioning, MockMvc mvc, ObjectMapper mapper) throws Exception {
-        String slug = "pos-" + UUID.randomUUID().toString().substring(0, 8);
+        return nuevo(provisioning, mvc, mapper, Sistema.POS);
+    }
+
+    static PosPrueba nuevo(TenantProvisioningService provisioning, MockMvc mvc, ObjectMapper mapper, Sistema sistema) throws Exception {
+        String slug = sistema.name().toLowerCase().substring(0, 3) + "-" + UUID.randomUUID().toString().substring(0, 8);
         String dni = String.valueOf(20000000 + (int) (Math.random() * 9_000_000));
         provisioning.provision(new TenantCreateRequest("Kiosco " + slug, slug, Rubro.ROPA,
-                null, null, null, null, null, null, null, null, null, null, null, null, Sistema.POS,
+                null, null, null, null, null, null, null, null, null, null, null, null, sistema,
                 new AdminInicial("Caja", "Prueba", dni, "caja@" + slug + ".com", "clave123")));
         RequestPostProcessor host = r -> { r.setServerName(slug + ".localhost"); return r; };
         String body = mvc.perform(post("/api/auth/login").with(host).contentType(MediaType.APPLICATION_JSON)

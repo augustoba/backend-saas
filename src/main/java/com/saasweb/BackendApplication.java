@@ -9,7 +9,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 // La auth es por JWT (ver SecurityConfig); no usamos el UserDetailsService por
 // defecto de Spring Security (evita el "generated security password" en el log).
-@SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class)
+// Nombres de beans con el sistema delante para pos/restaurante (ver SistemaBeanNameGenerator).
+// Los repositorios de Spring Data que se repiten llevan su nombre en @Repository.
+@SpringBootApplication(exclude = UserDetailsServiceAutoConfiguration.class,
+        nameGenerator = com.saasweb.core.config.SistemaBeanNameGenerator.class)
 @EnableConfigurationProperties(AppProperties.class)
 @EnableScheduling
 public class BackendApplication {

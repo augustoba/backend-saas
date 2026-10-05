@@ -67,6 +67,14 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
                 response.getWriter().write("{\"error\":\"tienda_pausada\",\"message\":\"Esta tienda está pausada.\"}");
                 return;
             }
+            if (isOtroSistema(tenantId, request)) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setCharacterEncoding("UTF-8");
+                response.setContentType("application/json");
+                response.getWriter().write(
+                        "{\"error\":\"no_disponible\",\"message\":\"Esta tienda no usa ese sistema.\"}");
+                return;
+            }
             if (isMissingEcommerceSiteForVisitor(tenantId, request)) {
                 response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
                 response.setCharacterEncoding("UTF-8");
@@ -79,6 +87,25 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
         } finally {
             TenantContext.clear();
         }
+    }
+
+    /**
+     * Las URLs de un sistema ({@code /api/pos/**}, {@code /api/restaurante/**} y
+     * sus {@code /api/public/<sistema>/**}) sólo existen para las tiendas de ese
+     * sistema: un ecommerce no tiene caja de POS ni mesas.
+     */
+    private boolean isOtroSistema(String tenantId, HttpServletRequest request) {
+        if (tenantId == null) return false;
+        String path = request.getRequestURI();
+        String resto = path.startsWith("/api/public/") ? path.substring("/api/public/".length())
+                : path.startsWith("/api/") ? path.substring("/api/".length()) : null;
+        if (resto == null) return false;
+        int barra = resto.indexOf('/');
+        String segmento = barra == -1 ? resto : resto.substring(0, barra);
+        for (Sistema s : Sistema.values()) {
+            if (s.name().equalsIgnoreCase(segmento)) return tenantService.sistemaDe(tenantId) != s;
+        }
+        return false;
     }
 
     /**

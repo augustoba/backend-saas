@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@org.springframework.stereotype.Repository("posGastoRepository")
 public interface GastoRepository extends JpaRepository<Gasto, String> {
     List<Gasto> findByTenantIdAndFechaBetweenOrderByFechaDescCreadoEnDesc(String tenantId, LocalDate desde, LocalDate hasta);
     Optional<Gasto> findByIdAndTenantId(String id, String tenantId);

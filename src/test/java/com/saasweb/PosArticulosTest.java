@@ -87,7 +87,7 @@ class PosArticulosTest {
         String body = mvc.perform(post("/api/auth/login").contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("{\"dni\":\"11111111\",\"password\":\"test-pass\"}")).andReturn().getResponse().getContentAsString();
         String auth = "Bearer " + mapper.readTree(body).get("token").asText();
-        // La tienda piloto (ecommerce) no tiene el permiso de vender del POS ni artículos propios.
-        mvc.perform(get("/api/pos/articulos").header("Authorization", auth)).andExpect(jsonPath("$.length()").value(0));
+        // La tienda piloto (ecommerce) no tiene las URLs del POS.
+        mvc.perform(get("/api/pos/articulos").header("Authorization", auth)).andExpect(status().isNotFound());
     }
 }

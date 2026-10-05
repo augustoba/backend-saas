@@ -3,7 +3,7 @@ package com.saasweb.pos.model;
 import jakarta.persistence.*;
 
 /** Rubro del kiosco para ordenar artículos (bebidas, golosinas, cigarrillos...). */
-@Entity
+@Entity(name = "PosCategoria")
 @Table(name = "pos_categoria")
 public class Categoria {
 

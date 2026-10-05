@@ -10,7 +10,7 @@ import java.time.LocalDate;
  * Un gasto del negocio (alquiler, luz, mercadería, sueldos). Si se pagó con
  * el efectivo de la caja abierta, genera el egreso en esa caja.
  */
-@Entity
+@Entity(name = "PosGasto")
 @Table(name = "pos_gasto")
 public class Gasto {
 

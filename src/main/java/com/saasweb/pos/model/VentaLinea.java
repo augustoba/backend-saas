@@ -8,7 +8,7 @@ import java.math.BigDecimal;
  * Renglón del ticket. {@code articuloId} null = "varios": un importe suelto
  * sin artículo (no mueve stock), algo común en el mostrador.
  */
-@Entity
+@Entity(name = "PosVentaLinea")
 @Table(name = "pos_venta_linea")
 public class VentaLinea {
 

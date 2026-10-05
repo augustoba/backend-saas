@@ -10,7 +10,7 @@ import java.time.Instant;
  * efectivo (arqueo). Una sola abierta por tienda. El resumen por medio de pago
  * se calcula de sus ventas (que no cambian después del cierre).
  */
-@Entity
+@Entity(name = "PosCaja")
 @Table(name = "pos_caja")
 public class Caja {
 

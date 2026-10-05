@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
+@org.springframework.stereotype.Repository("posMovimientoStockRepository")
 public interface MovimientoStockRepository extends JpaRepository<MovimientoStock, String> {
     List<MovimientoStock> findByTenantIdOrderByFechaDesc(String tenantId, Pageable page);
     List<MovimientoStock> findByTenantIdAndArticuloIdOrderByFechaDesc(String tenantId, String articuloId, Pageable page);

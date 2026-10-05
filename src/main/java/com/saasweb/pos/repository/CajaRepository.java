@@ -9,12 +9,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+@org.springframework.stereotype.Repository("posCajaRepository")
 public interface CajaRepository extends JpaRepository<Caja, String> {
     Optional<Caja> findFirstByTenantIdAndEstado(String tenantId, Caja.Estado estado);
     Optional<Caja> findByIdAndTenantId(String id, String tenantId);
     List<Caja> findByTenantIdOrderByAbiertaEnDesc(String tenantId, Pageable page);
 
-    @Query("select coalesce(max(c.numero), 0) from Caja c where c.tenantId = :tenantId")
+    @Query("select coalesce(max(c.numero), 0) from PosCaja c where c.tenantId = :tenantId")
     int ultimoNumero(@Param("tenantId") String tenantId);
 
     void deleteByTenantId(String tenantId);
