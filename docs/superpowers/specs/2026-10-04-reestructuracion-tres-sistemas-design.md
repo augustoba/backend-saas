@@ -1,0 +1,205 @@
+# Reestructuración: un SaaS, tres sistemas (Ecommerce · POS · Restaurante)
+
+> Spec + registro de avance. Se actualiza al cerrar cada punto (qué se hizo,
+> qué falta, commits). Fecha de diseño: 2026-10-04. Rama de trabajo:
+> `reestructuracion` en `back/` y en `front/` (main queda intacto hasta el final).
+
+---
+
+## 1. Decisiones tomadas (con el usuario)
+
+| Tema | Decisión |
+|---|---|
+| Sistemas | **Ecommerce**, **POS** (kiosco/punto de venta) y **Restaurante** |
+| Combinación | **Un tenant = un sistema.** No se comparten productos ni stock entre sistemas. Los "combos" se resuelven dentro de cada sistema (ecommerce ya tiene venta en el local; restaurante ya tiene carta online) |
+| Despliegue | **Un solo backend Spring Boot + una sola DB MySQL** para todos los tenants |
+| Arquitectura | **Núcleo chico compartido + sistemas aislados** (enfoque A). Lo técnico se comparte siempre; lo de negocio se duplica y sólo sube al núcleo cuando un 2º sistema lo necesita **idéntico** (sin `if (sistema == …)`) |
+| Estructura de código | Primero **por sistema**, adentro **por capa MVC** (`controller/ service/ repository/ model/ dto/`) |
+| Reglas de dependencia | Un sistema nunca importa a otro; `core` nunca importa a un sistema. Lo verifica un test (ArchUnit) |
+| Ecommerce de Ruth | **Sigue aparte**, en producción. Es la **referencia funcional** del ecommerce del SaaS: lo que Ruth suma se porta (tabla de paridad, §8) |
+| Diseños de tienda | Se mantienen los **35** (15 propios + 20 de Ruth) y la pantalla Apariencia como está |
+| Datos | Todo es de prueba: **esquema nuevo desde cero**, sin migración de datos |
+| Esquema | **Flyway** reemplaza a `ddl-auto: update` |
+| Dominios | Subdominio gratis `slug.<plataforma>` **+ dominios propios** pagados por el cliente |
+| Servidor | Un **VPS-1 de OVHcloud** (2 vCores / 4 GB) dedicado al SaaS. La cadetería comparte servidor con Ruth, no con el SaaS |
+| Imágenes | Servicio intercambiable en el núcleo: **Cloudinary hoy**, **Cloudflare R2** cuando haya muchas tiendas |
+
+## 2. Estructura
+
+### Backend (`com.saasweb`)
+```
+core/         controller/ service/ repository/ model/ dto/ config/
+ecommerce/    controller/ service/ repository/ model/ dto/
+pos/          controller/ service/ repository/ model/ dto/
+restaurante/  controller/ service/ repository/ model/ dto/
+```
+URLs: `/api/core/**`, `/api/ecommerce/**`, `/api/pos/**`, `/api/restaurante/**`
+(+ `/api/public/<sistema>/**` para lo que se ve sin login).
+
+### Frontend (Angular 19, una sola app)
+```
+src/app/core/          login, marco del panel, servicios de tenant/plan/ARCA/imágenes, guards
+src/app/shared/        componentes visuales sueltos
+src/app/ecommerce/     admin/ + tienda/ (catálogo, carrito, 35 plantillas)
+src/app/pos/           admin/ (venta rápida, caja, artículos)
+src/app/restaurante/   admin/ + carta/ (menú online público)
+```
+Cada sistema es una ruta lazy. El panel tiene la marca de la plataforma; la
+personalización (colores/diseño) es sólo del sitio público.
+
+## 3. Núcleo (`core`)
+
+| Tabla | Contenido |
+|---|---|
+| `core_tenant` | slug, nombre, **sistema** (`ECOMMERCE`/`POS`/`RESTAURANTE`), rubro, plan, activo |
+| `core_dominio` | tenant, host, principal, estado (`PENDIENTE`/`ACTIVO`) |
+| `core_plan`, `core_plan_modulo` | planes por sistema y sus módulos |
+| `core_usuario`, `core_rol`, `core_rol_permiso` | login por DNI; permisos = strings que declara cada sistema |
+| `core_identidad` | nombre comercial, logo, forma del logo, color de marca, WhatsApp, Instagram, Facebook, dirección, foto del local, texto "nosotros" |
+| `core_config_arca` | CUIT, punto de venta, condición IVA, certificado, clave, modo prueba, modo de comprobante |
+| `core_config_mp` | access token, public key, habilitado |
+| `core_config_mail` | SMTP propio de la tienda |
+| `core_config_imagenes` | proveedor, cloud name, preset, API key/secret |
+| `core_comprobante` | factura/NC: tipo, CAE, vencimiento, número, PV, QR, error, CUIT comprador, total, **origen** (`sistema` + `id`) |
+| `core_cobro_mp` | preference id, checkout url, payment id, estado, nota, **origen** |
+| `core_mail_plataforma` | SMTP del operador |
+
+**Origen** = dos strings (`"ECOMMERCE"`, `"<id>"`) sin FK: el núcleo factura y
+cobra sin conocer a los sistemas. Cuando cambia el estado de un cobro, el
+núcleo publica un evento (`CobroActualizado`) que el sistema dueño escucha.
+
+### Resolución de tenant (por `Host`)
+1. `core_dominio` por host exacto (dominios propios, estado ACTIVO).
+2. Si termina en `.<dominio-plataforma>`, el prefijo es el slug.
+3. Si no, 404 "tienda no encontrada". `X-Demo-Tenant` sólo en desarrollo.
+
+Links de mails y `back_urls` de Mercado Pago se arman con el **dominio
+principal** del tenant.
+
+### SSL de dominios propios
+Caddy con *on-demand TLS*: antes de emitir, consulta
+`GET /api/public/core/dominios/permitido?host=…` (200 sólo si el host es de un
+tenant activo).
+
+## 4. Ecommerce (`ec_`)
+
+Base funcional: **lo último de Ruth** + lo propio del SaaS (multi-tenant,
+ARCA, Apariencia/colores, bloques de página, 35 diseños).
+
+| Tabla | Nota |
+|---|---|
+| `ec_producto` | nombre, descripción, precio, costo, IVA, código de barras, umbral stock, activo, discontinuado, eliminado, video, proveedor, **mostrar_en_promos** |
+| `ec_producto_imagen` | galería ordenada (1ª = portada) |
+| `ec_variante` | producto, nombre ("M", "Rojo 42"), stock, código de barras — **reemplaza a talle/SizeStock** |
+| `ec_escala_variante` (+ valores) | plantillas de variantes ("Talles bebé") |
+| `ec_param_grupo`, `ec_param_opcion`, `ec_producto_param` | parametrías (la "edad" pasa a ser una) |
+| `ec_pedido`, `ec_pedido_linea` | canal WEB/LOCAL; línea con **estado** PENDIENTE/ENTREGADA/CANCELADA, apunta a variante, congela nombre y costo |
+| `ec_cambio`, `ec_cambio_linea` | admite **devolución pura** |
+| `ec_movimiento_stock` | con costo |
+| `ec_descuento`, `ec_cupon` | |
+| `ec_config_tienda` | diseño, theme, colores, textos WhatsApp, medios de pago manuales, ayuda/FAQ, alerta de stock, **banner promo**, **página nosotros activa** |
+| `ec_carrusel`, `ec_bloque_pagina`, `ec_marketing_config`, `ec_marketing_envio` | |
+| `ec_turno`, `ec_proveedor`, `ec_gasto`, `ec_presupuesto_gasto` | |
+
+## 5. POS (`pos_`)
+
+| Tabla | Nota |
+|---|---|
+| `pos_articulo` | nombre, código de barras, precio, costo, IVA, stock, umbral, categoría |
+| `pos_categoria` | |
+| `pos_venta`, `pos_venta_linea` | ticket: medio de pago, monto entregado, cajero |
+| `pos_caja`, `pos_movimiento_caja` | apertura/cierre con arqueo (la caja es el turno) |
+| `pos_movimiento_stock`, `pos_proveedor`, `pos_gasto` | |
+
+Sin sitio público: `/` lleva al login.
+
+## 6. Restaurante (`rs_`)
+
+Se porta el proyecto `C:\proyectos\restaurante` (backend + frontend) quitándole
+su tenant/usuario/rol (pasan a ser los del núcleo). Tablas: `rs_sucursal`,
+`rs_sector`, `rs_salon`, `rs_mesa`, `rs_categoria`, `rs_producto`,
+`rs_grupo_modificador`, `rs_modificador`, `rs_lista_precio(_item)`,
+`rs_orden`, `rs_orden_item`, `rs_pago`, `rs_solicitud_mesa`, `rs_caja`,
+`rs_arqueo`, `rs_movimiento_caja`, `rs_turno`, `rs_cliente`,
+`rs_cuenta_corriente_mov`, `rs_reserva`, `rs_turno_reserva`,
+`rs_config_reserva_salon`, `rs_proveedor`, `rs_gasto`, `rs_categoria_gasto`,
+`rs_clasificacion_gasto`, `rs_movimiento_stock`, `rs_menu_online_config`,
+`rs_comentario_producto`, `rs_zona_envio`, `rs_medio_pago`, `rs_preferencias`.
+
+Sitio público: carta online + pedido desde mesa (QR) + reservas.
+
+## 7. Capacidad y costos (estimado, a confirmar con prueba de carga en Etapa 5)
+
+- VPS-1 OVH (2 vCores/4 GB, ~US$ 4,5/mes): SO+Caddy ~0,4 GB, MySQL ~1 GB,
+  backend ~1 GB → **15–20 tiendas cómodas, techo estimado 30–50**.
+- Servidor ≈ US$ 0,25/cliente/mes con 20 clientes.
+- Imágenes: el gratis de Cloudinary (~25 créditos) no alcanza para tráfico de
+  ~20 tiendas → pasar a R2 (tráfico gratis) cambiando sólo el servicio del núcleo.
+
+## 8. Paridad Ecommerce de Ruth → SaaS
+
+Se actualiza cada vez que Ruth suma algo. El ecommerce del SaaS está "al día"
+cuando no hay filas en ⏳.
+
+| Función de Ruth | Estado |
+|---|---|
+| 21 diseños de tienda (20 + Clásico) con vocabulario de tienda | ✅ (Fase 19) |
+| Entrega/cancelación parcial de pedidos (estado por línea, agregar ítem) | ⏳ |
+| Devolución pura en Cambios | ⏳ |
+| Ajuste masivo de precio | ⏳ |
+| Eliminar producto definitivo (+ borrar fotos en el proveedor) | ⏳ |
+| "Mostrar en promos" + vista `/promos` con fallback a descuentos | ⏳ |
+| Banner promocional emergente | ⏳ |
+| Página "Nosotros" + foto del local | ⏳ |
+| WhatsApp flotante | ⏳ |
+| "Coordinar por WhatsApp" tras pago aprobado | ⏳ |
+| Título de pestaña "Página \| Tienda" | ⏳ |
+| Medios de pago del local POSNET/Efectivo/Transferencia | ⏳ |
+| Auditoría de over-fetching del catálogo público | ⏳ |
+
+## 9. Etapas y avance
+
+Cada etapa: compila, tests en verde, prueba en navegador, commit, y se
+actualiza esta sección.
+
+### Etapa 0 — Preparación ⏳
+- [ ] Rama `reestructuracion` en back y front
+- [ ] Flyway (esquema versionado) en lugar de `ddl-auto: update`
+- [ ] Paquetes `core/ ecommerce/ pos/ restaurante/` y test ArchUnit de dependencias
+- [ ] Carpetas del front + regla de lint/imports equivalente
+
+### Etapa 1 — Núcleo ⏳
+- [ ] `core_tenant` con sistema + `core_dominio` + resolución por Host
+- [ ] Usuarios/roles/permisos, login, recuperar contraseña
+- [ ] Planes y módulos por sistema
+- [ ] Identidad + config ARCA/MP/mail/imágenes (servicio de imágenes intercambiable)
+- [ ] `core_comprobante` + `core_cobro_mp` con origen + evento de cobro
+- [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
+- [ ] Verificado: el superadmin crea un tenant de cada sistema y cada uno ve su menú
+
+### Etapa 2 — Ecommerce ⏳
+- [ ] Mover a `ecommerce/` con tablas `ec_`; talle → variante
+- [ ] Facturación y cobro vía núcleo
+- [ ] Paridad con Ruth (§8) sin pendientes
+- [ ] 35 diseños + Apariencia funcionando
+- [ ] Verificado: compra WhatsApp y MP, venta en local, cambio, factura ARCA de prueba
+
+### Etapa 3 — POS ⏳
+- [ ] Artículos, venta rápida con lector, caja con arqueo, stock, gastos
+- [ ] Verificado: abrir caja, vender escaneando, facturar, cerrar con arqueo
+
+### Etapa 4 — Restaurante ⏳
+- [ ] Portar back + front sobre el núcleo, tablas `rs_`
+- [ ] Verificado: comanda en mesa → KDS → cobro → factura; carta online y reservas
+
+### Etapa 5 — Despliegue ⏳
+- [ ] VPS OVH + Caddy (on-demand TLS) + backups MySQL
+- [ ] Dominio de plataforma + un dominio propio de prueba
+- [ ] Prueba de carga (~20 tiendas simuladas)
+
+## 10. Registro de avance
+
+| Fecha | Qué | Commits |
+|---|---|---|
+| 2026-10-04 | Fase 19: 20 diseños de Ruth en el SaaS (previo a la reestructuración) | back `a675938`, front `ce97e14` |
+| 2026-10-04 | Spec escrito | (este commit) |
