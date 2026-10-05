@@ -57,7 +57,8 @@ public class ConfiguracionController {
     @PutMapping("/api/admin/settings/cloudinary")
     @PreAuthorize("hasAuthority('SUPERADMIN')")
     public CloudinaryConfigResponse updateCloudinaryConfig(@Valid @RequestBody CloudinaryConfigRequest req) {
-        return CloudinaryConfigResponse.from(configuracion.actualizarImagenes(req.cloudName(), req.uploadPreset()));
+        return CloudinaryConfigResponse.from(configuracion.actualizarImagenes(req.cloudName(), req.uploadPreset(),
+                req.apiKey(), req.apiSecret()));
     }
 
     @GetMapping("/api/admin/settings/mail")

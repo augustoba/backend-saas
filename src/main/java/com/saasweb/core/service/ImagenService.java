@@ -56,6 +56,13 @@ public class ImagenService {
         return proveedor.ticket(cfg, ruta, nombre == null || nombre.isBlank() ? null : segmento(nombre, "nombre"));
     }
 
+    /** Borra fotos del proveedor de la tienda (best effort: nunca bloquea al que llama). */
+    public void borrar(List<String> urls) {
+        if (urls == null || urls.isEmpty()) return;
+        ConfigImagenes cfg = configuracion.imagenes();
+        proveedorDe(cfg).borrar(cfg, urls);
+    }
+
     private ProveedorImagenes proveedorDe(ConfigImagenes cfg) {
         String clave = cfg.getProveedor() == null ? CloudinaryImagenes.CLAVE : cfg.getProveedor();
         return proveedores.stream().filter(p -> p.clave().equals(clave)).findFirst()

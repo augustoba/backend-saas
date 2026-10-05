@@ -377,4 +377,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back `93f817c` |
 | 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back `70c344d`, front `1768d9b` |
 | 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back `062bc55`, front `696efb7` |
-| 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back (ver git log) |
+| 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back `99a9dcc` |

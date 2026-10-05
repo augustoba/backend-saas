@@ -43,10 +43,13 @@ public class ProductService {
     private final PlanService planService;
     private final StockMovementRepository movementRepo;
     private final AdminUserRepository adminUsers;
+    private final com.saasweb.core.service.ImagenService imagenService;
     private final ZoneId zone = ZoneId.systemDefault();
 
     public ProductService(ProductRepository repo, OrderRepository orderRepo, PlanService planService,
-                          StockMovementRepository movementRepo, AdminUserRepository adminUsers) {
+                          StockMovementRepository movementRepo, AdminUserRepository adminUsers,
+                          com.saasweb.core.service.ImagenService imagenService) {
+        this.imagenService = imagenService;
         this.repo = repo;
         this.orderRepo = orderRepo;
         this.planService = planService;
@@ -275,6 +278,43 @@ public class ProductService {
         repo.save(p);
     }
 
+    /**
+     * Borra la fila de verdad: a diferencia de {@link #delete}, que archiva
+     * (reversible). Sólo sobre un producto ya archivado (evita borrar algo que
+     * seguía publicado). Las fotos se borran del proveedor de imágenes si hay
+     * credenciales; si no, quedan en la cuenta (nunca bloquea el borrado).
+     */
+    public void permanentlyDelete(String id) {
+        Product p = get(id);
+        if (!p.isDeleted()) {
+            throw new BadRequestException("Sólo se puede eliminar definitivamente un producto ya archivado.");
+        }
+        List<String> images = List.copyOf(p.getImages());
+        repo.delete(p);
+        imagenService.borrar(images);
+    }
+
+    /**
+     * Ajuste masivo de precio por porcentaje (+10 sube 10%, -15 baja 15%).
+     * {@code ids} vacío = todos los productos no archivados de la tienda. Sólo
+     * toca el precio de venta (nunca el costo); redondea al peso.
+     */
+    public int bulkAdjustPrice(List<String> ids, BigDecimal percent) {
+        if (percent == null) throw new BadRequestException("Falta el porcentaje de ajuste.");
+        String tenantId = TenantContext.getTenantId();
+        List<Product> targets = (ids == null || ids.isEmpty())
+                ? repo.findByTenantIdAndDeletedFalseOrderByCreatedAtDesc(tenantId)
+                : repo.findAllById(ids).stream().filter(p -> tenantId.equals(p.getTenantId()) && !p.isDeleted()).toList();
+        BigDecimal factor = BigDecimal.ONE.add(percent.divide(BigDecimal.valueOf(100), 6, java.math.RoundingMode.HALF_UP));
+        for (Product p : targets) {
+            if (p.getPrice() == null) continue;
+            BigDecimal next = p.getPrice().multiply(factor).setScale(0, java.math.RoundingMode.HALF_UP);
+            p.setPrice(next.signum() < 0 ? BigDecimal.ZERO : next);
+        }
+        repo.saveAll(targets);
+        return targets.size();
+    }
+
     /** Restaura un producto archivado (queda oculto: hay que republicarlo a mano). */
     public Product restore(String id) {
         Product p = get(id);
@@ -434,6 +474,7 @@ public class ProductService {
         p.setSizeScaleId(blankToNull(req.sizeScaleId()));
         p.setSupplierId(blankToNull(req.supplierId()));
         p.setBarcode(blankToNull(req.barcode()));
+        p.setFeaturedInPromos(Boolean.TRUE.equals(req.featuredInPromos()));
         p.setCostPrice(req.costPrice() != null && req.costPrice().signum() > 0 ? req.costPrice() : null);
         p.setIvaRate(req.ivaRate() != null && req.ivaRate().signum() >= 0 ? req.ivaRate() : null);
         p.setLowStockThreshold(

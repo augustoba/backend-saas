@@ -67,9 +67,12 @@ public class ExchangeService {
         ex.setProcessedByName(processedByDni == null || processedByDni.isBlank() ? null
                 : adminUsers.findByDniForTenant(processedByDni, tenantId).map(u -> u.getNombre() + " " + u.getApellido()).orElse(null));
 
+        // "Se lleva" es opcional: vacío = devolución pura (de Ruth).
+        List<ExchangeItem> taken = req.taken() == null ? List.of() : req.taken();
+
         // Pre-chequeo de stock de lo que se lleva (agrupando por producto+talle).
         List<String> shortages = new ArrayList<>();
-        for (ExchangeItem item : req.taken()) {
+        for (ExchangeItem item : taken) {
             Product p = product(item.productId());
             int available = productService.stockOf(p.getId(), item.size());
             if (item.quantity() > available) {
@@ -93,7 +96,7 @@ public class ExchangeService {
         }
 
         BigDecimal takenTotal = BigDecimal.ZERO;
-        for (ExchangeItem item : req.taken()) {
+        for (ExchangeItem item : taken) {
             Product p = product(item.productId());
             BigDecimal line = p.getPrice().multiply(BigDecimal.valueOf(item.quantity()));
             takenTotal = takenTotal.add(line);

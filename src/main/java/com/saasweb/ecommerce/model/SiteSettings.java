@@ -122,6 +122,21 @@ public class SiteSettings {
     @Column(nullable = false)
     private boolean lowStockAlertEnabled = false;
 
+    /** Página pública "Nosotros" (con el texto y la foto del local de la identidad). */
+    @Column(nullable = false)
+    private boolean aboutPageEnabled = false;
+
+    /** Banner emergente de promoción en las páginas públicas (una vez por pestaña). */
+    @Column(nullable = false)
+    private boolean promoBannerEnabled = false;
+
+    @Column(length = 5_000_000)
+    private String promoBannerImage;
+
+    /** A dónde lleva el banner al tocarlo: /promos, /producto/xxx o una URL. */
+    @Column(length = 500)
+    private String promoBannerLink;
+
     /** Mail a donde mandar la alerta de stock bajo. null = no manda nada aunque esté habilitada. */
     @Column(length = 255)
     private String lowStockAlertEmail;
@@ -303,4 +318,12 @@ public class SiteSettings {
     public void setLowStockAlertEmail(String lowStockAlertEmail) {
         this.lowStockAlertEmail = lowStockAlertEmail;
     }
+    public boolean isAboutPageEnabled() { return aboutPageEnabled; }
+    public void setAboutPageEnabled(boolean aboutPageEnabled) { this.aboutPageEnabled = aboutPageEnabled; }
+    public boolean isPromoBannerEnabled() { return promoBannerEnabled; }
+    public void setPromoBannerEnabled(boolean promoBannerEnabled) { this.promoBannerEnabled = promoBannerEnabled; }
+    public String getPromoBannerImage() { return promoBannerImage; }
+    public void setPromoBannerImage(String promoBannerImage) { this.promoBannerImage = promoBannerImage; }
+    public String getPromoBannerLink() { return promoBannerLink; }
+    public void setPromoBannerLink(String promoBannerLink) { this.promoBannerLink = promoBannerLink; }
 }

@@ -52,8 +52,15 @@ public final class ProductDtos {
             Map<String, List<String>> params,
             List<SizeStockDto> sizeStocks,
             /** Código de barras real (EAN/UPC) — opcional. */
-            @Size(max = 64) String barcode
+            @Size(max = 64) String barcode,
+            /** Mostrar en la vista pública /promos. */
+            Boolean featuredInPromos
     ) {}
+
+    /** Ajuste masivo de precio: {@code percent} +10 sube 10%, -15 baja 15%. {@code ids} vacío = todos. */
+    public record BulkPriceRequest(List<String> ids, @NotNull java.math.BigDecimal percent) {}
+
+    public record BulkPriceResponse(int updated) {}
 
     public record StockPatch(@NotBlank String size, int stock, String note) {}
 
@@ -104,7 +111,8 @@ public final class ProductDtos {
             Integer lowStockThreshold,
             Map<String, List<String>> params,
             List<SizeStockDto> sizeStocks,
-            String barcode
+            String barcode,
+            boolean featuredInPromos
     ) {
         public static ProductResponse from(Product p) {
             Map<String, List<String>> params = new LinkedHashMap<>();
@@ -118,7 +126,7 @@ public final class ProductDtos {
                     p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getAgeRange(),
                     p.getImageUrl(), List.copyOf(p.getImages()), p.getVideoUrl(), p.isActive(), p.isDiscontinued(),
                     p.isDeleted(), p.getCreatedAt(), p.getSizeScaleId(), p.getSupplierId(), p.getCostPrice(),
-                    p.getIvaRate(), p.getLowStockThreshold(), params, stocks, p.getBarcode());
+                    p.getIvaRate(), p.getLowStockThreshold(), params, stocks, p.getBarcode(), p.isFeaturedInPromos());
         }
     }
 }

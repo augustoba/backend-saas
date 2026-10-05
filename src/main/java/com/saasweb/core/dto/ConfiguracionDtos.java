@@ -25,7 +25,8 @@ public final class ConfiguracionDtos {
             @Size(max = 5_000_000) String logoUrl,
             @Pattern(regexp = "^$|^(circle|square|rectangle)$", message = "Forma de logo desconocida")
             String logoShape,
-            @Size(max = 500) String storeAddress
+            @Size(max = 500) String storeAddress,
+            @Size(max = 5_000_000) String storePhotoUrl
     ) {}
 
     /**
@@ -84,14 +85,19 @@ public final class ConfiguracionDtos {
     }
 
     /** Config de Cloudinary: sólo la puede ver/editar un superadmin. */
+    /** {@code apiKey}/{@code apiSecret}: opcionales, sólo para poder borrar fotos. Secret en blanco = no cambiarlo. */
     public record CloudinaryConfigRequest(
             @Size(max = 200) String cloudName,
-            @Size(max = 200) String uploadPreset
+            @Size(max = 200) String uploadPreset,
+            @Size(max = 100) String apiKey,
+            @Size(max = 200) String apiSecret
     ) {}
 
-    public record CloudinaryConfigResponse(String cloudName, String uploadPreset) {
+    /** El secret nunca se devuelve: sólo si hay uno guardado. */
+    public record CloudinaryConfigResponse(String cloudName, String uploadPreset, String apiKey, boolean apiSecretSet) {
         public static CloudinaryConfigResponse from(ConfigImagenes s) {
-            return new CloudinaryConfigResponse(s.getCloudinaryCloudName(), s.getCloudinaryUploadPreset());
+            return new CloudinaryConfigResponse(s.getCloudinaryCloudName(), s.getCloudinaryUploadPreset(),
+                    s.getCloudinaryApiKey(), s.getCloudinaryApiSecret() != null && !s.getCloudinaryApiSecret().isBlank());
         }
     }
 

@@ -77,12 +77,17 @@ public class SiteSettingsService {
     /** Formulario "Identidad" del panel: la identidad va al núcleo, los textos de la tienda quedan acá. */
     public SiteSettings updatePlatform(PlatformSettingsRequest req) {
         configuracion.actualizarIdentidad(new ConfiguracionDtos.IdentidadRequest(req.storeName(), req.whatsappNumber(),
-                req.aboutText(), req.instagram(), req.facebookUrl(), req.logoUrl(), req.logoShape(), req.storeAddress()));
+                req.aboutText(), req.instagram(), req.facebookUrl(), req.logoUrl(), req.logoShape(), req.storeAddress(),
+                req.storePhotoUrl()));
         SiteSettings s = get();
         s.setWhatsappIntro(blankToNull(req.whatsappIntro()));
         s.setWhatsappClosing(blankToNull(req.whatsappClosing()));
         s.setHelpText(blankToNull(req.helpText()));
         s.setFaqText(blankToNull(req.faqText()));
+        s.setAboutPageEnabled(Boolean.TRUE.equals(req.aboutPageEnabled()));
+        s.setPromoBannerEnabled(Boolean.TRUE.equals(req.promoBannerEnabled()));
+        s.setPromoBannerImage(blankToNull(req.promoBannerImage()));
+        s.setPromoBannerLink(blankToNull(req.promoBannerLink()));
         return repo.save(s);
     }
 

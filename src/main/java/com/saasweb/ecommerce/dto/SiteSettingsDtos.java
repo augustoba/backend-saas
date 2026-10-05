@@ -34,7 +34,13 @@ public final class SiteSettingsDtos {
             @Size(max = 2000) String whatsappClosing,
             @Size(max = 500) String storeAddress,
             @Size(max = 8000) String helpText,
-            @Size(max = 20000) String faqText
+            @Size(max = 20000) String faqText,
+            /** Foto del local (identidad). */
+            @Size(max = 5_000_000) String storePhotoUrl,
+            Boolean aboutPageEnabled,
+            Boolean promoBannerEnabled,
+            @Size(max = 5_000_000) String promoBannerImage,
+            @Size(max = 500) String promoBannerLink
     ) {}
 
     /**
@@ -140,7 +146,12 @@ public final class SiteSettingsDtos {
              * usa sólo para decidir si mostrar el campo de CUIT del comprador
              * en el punto de venta (habilita Factura A en vez de B).
              */
-            String arcaCondicionIva
+            String arcaCondicionIva,
+            String storePhotoUrl,
+            boolean aboutPageEnabled,
+            boolean promoBannerEnabled,
+            String promoBannerImage,
+            String promoBannerLink
     ) {
         /**
          * Junta la configuración de la tienda online ({@code s}) con la identidad y
@@ -167,7 +178,9 @@ public final class SiteSettingsDtos {
                     img.getCloudinaryCloudName(), img.getCloudinaryUploadPreset(),
                     socialShareEnabled, mercadoPagoAvailable,
                     sistema, sistema == Sistema.POS, sistema == Sistema.ECOMMERCE,
-                    arcaAvailable, arca.getInvoiceMode(), arca.getArcaCondicionIva());
+                    arcaAvailable, arca.getInvoiceMode(), arca.getArcaCondicionIva(),
+                    i.getStorePhotoUrl(), s.isAboutPageEnabled(), s.isPromoBannerEnabled(),
+                    s.getPromoBannerImage(), s.getPromoBannerLink());
         }
     }
 

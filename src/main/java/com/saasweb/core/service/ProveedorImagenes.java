@@ -23,6 +23,13 @@ public interface ProveedorImagenes {
     TicketSubida ticket(ConfigImagenes cfg, String carpeta, String nombre);
 
     /**
+     * Borra estas imágenes (por su URL pública). <b>Best effort</b>: nunca tira
+     * excepción; sin credenciales para borrar, no hace nada.
+     */
+    default void borrar(ConfigImagenes cfg, java.util.List<String> urls) {
+    }
+
+    /**
      * Cómo subir el archivo desde el navegador.
      *
      * @param metodo        "POST_FORM" (multipart con {@code campos} + el archivo en {@code campoArchivo})

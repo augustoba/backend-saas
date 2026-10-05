@@ -124,6 +124,7 @@ public class ConfiguracionService {
         i.setLogoUrl(blankToNull(req.logoUrl()));
         i.setLogoShape(blankToNull(req.logoShape()));
         i.setStoreAddress(blankToNull(req.storeAddress()));
+        i.setStorePhotoUrl(blankToNull(req.storePhotoUrl()));
         return identidades.save(i);
     }
 
@@ -156,10 +157,13 @@ public class ConfiguracionService {
         return arcas.save(c);
     }
 
-    public ConfigImagenes actualizarImagenes(String cloudName, String uploadPreset) {
+    /** {@code apiSecret} en blanco = no tocar el guardado. */
+    public ConfigImagenes actualizarImagenes(String cloudName, String uploadPreset, String apiKey, String apiSecret) {
         ConfigImagenes c = imagenes();
         c.setCloudinaryCloudName(blankToNull(cloudName));
         c.setCloudinaryUploadPreset(blankToNull(uploadPreset));
+        c.setCloudinaryApiKey(blankToNull(apiKey));
+        if (apiSecret != null && !apiSecret.isBlank()) c.setCloudinaryApiSecret(apiSecret.trim());
         return imagenes.save(c);
     }
 

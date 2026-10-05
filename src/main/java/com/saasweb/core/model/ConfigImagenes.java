@@ -23,6 +23,13 @@ public class ConfigImagenes {
     @Column(length = 200)
     private String cloudinaryUploadPreset;
 
+    /** Credenciales firmadas: sólo hacen falta para BORRAR fotos (el preset unsigned sólo sube). */
+    @Column(length = 100)
+    private String cloudinaryApiKey;
+
+    @Column(length = 200)
+    private String cloudinaryApiSecret;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getProveedor() { return proveedor; }
@@ -31,4 +38,8 @@ public class ConfigImagenes {
     public void setCloudinaryCloudName(String cloudinaryCloudName) { this.cloudinaryCloudName = cloudinaryCloudName; }
     public String getCloudinaryUploadPreset() { return cloudinaryUploadPreset; }
     public void setCloudinaryUploadPreset(String cloudinaryUploadPreset) { this.cloudinaryUploadPreset = cloudinaryUploadPreset; }
+    public String getCloudinaryApiKey() { return cloudinaryApiKey; }
+    public void setCloudinaryApiKey(String cloudinaryApiKey) { this.cloudinaryApiKey = cloudinaryApiKey; }
+    public String getCloudinaryApiSecret() { return cloudinaryApiSecret; }
+    public void setCloudinaryApiSecret(String cloudinaryApiSecret) { this.cloudinaryApiSecret = cloudinaryApiSecret; }
 }

@@ -27,8 +27,8 @@ public final class ExchangeDtos {
             @Size(max = 120) String customerName,
             /** Prendas que el cliente devuelve (vuelven al stock). */
             @NotEmpty List<ExchangeItem> returned,
-            /** Prendas que se lleva (salen del stock). */
-            @NotEmpty List<ExchangeItem> taken,
+            /** Prendas que se lleva (salen del stock). Vacío = devolución pura (se le devuelve la plata). */
+            List<ExchangeItem> taken,
             /** Medio de pago de la diferencia (si la hay). */
             PaymentMethod paymentMethod,
             @Size(max = 500) String note

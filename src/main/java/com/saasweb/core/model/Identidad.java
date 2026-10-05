@@ -39,6 +39,10 @@ public class Identidad {
     @Column(length = 500)
     private String storeAddress;
 
+    /** Foto del local (vidriera, mostrador): la usa la página "Nosotros" y algún diseño. */
+    @Column(length = 5_000_000)
+    private String storePhotoUrl;
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public String getStoreName() { return storeName; }
@@ -59,4 +63,6 @@ public class Identidad {
     public void setBrandColor(String brandColor) { this.brandColor = brandColor; }
     public String getStoreAddress() { return storeAddress; }
     public void setStoreAddress(String storeAddress) { this.storeAddress = storeAddress; }
+    public String getStorePhotoUrl() { return storePhotoUrl; }
+    public void setStorePhotoUrl(String storePhotoUrl) { this.storePhotoUrl = storePhotoUrl; }
 }

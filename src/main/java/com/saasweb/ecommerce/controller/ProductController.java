@@ -128,6 +128,22 @@ public class ProductController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Borrado definitivo de un producto ya archivado (irreversible). */
+    @DeleteMapping("/api/admin/products/{id}/permanent")
+    @PreAuthorize("hasAuthority('PRODUCTS_MANAGE')")
+    public ResponseEntity<Void> permanentlyDelete(@PathVariable String id) {
+        service.permanentlyDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    /** Ajuste masivo de precio por %. `ids` vacío = todos los productos no archivados. */
+    @PatchMapping("/api/admin/products/bulk-price")
+    @PreAuthorize("hasAuthority('PRODUCTS_MANAGE')")
+    public com.saasweb.ecommerce.dto.ProductDtos.BulkPriceResponse bulkPrice(
+            @Valid @RequestBody com.saasweb.ecommerce.dto.ProductDtos.BulkPriceRequest req) {
+        return new com.saasweb.ecommerce.dto.ProductDtos.BulkPriceResponse(service.bulkAdjustPrice(req.ids(), req.percent()));
+    }
+
     @PatchMapping("/api/admin/products/{id}/active")
     @PreAuthorize("hasAuthority('PRODUCTS_MANAGE')")
     public ProductResponse setActive(@PathVariable String id, @Valid @RequestBody ActivePatch body) {
