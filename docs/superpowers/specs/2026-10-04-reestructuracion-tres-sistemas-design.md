@@ -230,7 +230,13 @@ actualiza esta sección.
       `core_identidad` y los textos de la tienda en `site_settings`.
 - [ ] Servicio de imágenes intercambiable (hoy el front sube directo a Cloudinary
       con el preset; falta la interfaz del núcleo para poder pasar a R2)
-- [ ] `core_comprobante` + `core_cobro_mp` con origen + evento de cobro
+- [x] **1f** `core_comprobante` (V6) con origen (sistema + id, sin FK) y clase
+      FACTURA / NOTA_CREDITO; `ComprobanteService.registrar/deOrigen`. Las notas
+      de crédito ya viven ahí (`credit_note` migrada y borrada; la API
+      `/api/admin/orders/{id}/credit-notes` responde igual).
+      **Pasan a la Etapa 2 (a propósito):** sacar del pedido los campos `invoice*`
+      y `mp*` y el cobro de Mercado Pago (`core_cobro_mp` + evento). El pedido se
+      rehace como `ec_pedido` en esa etapa; hacerlo ahora sería migrarlo dos veces.
 - [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
 - [ ] Verificado: el superadmin crea un tenant de cada sistema y cada uno ve su menú
 
@@ -265,4 +271,5 @@ actualiza esta sección.
 | 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back `5786850` |
 | 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back `8259da5` |
 | 2026-10-04 | 1d: admin inicial en el alta de tienda | back `ab9d9d9` |
-| 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back (ver git log) |
+| 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back `a76b6fa` |
+| 2026-10-04 | 1f: comprobantes en el núcleo; notas de crédito migradas | back (ver git log) |

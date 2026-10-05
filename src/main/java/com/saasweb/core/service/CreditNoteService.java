@@ -1,7 +1,7 @@
 package com.saasweb.core.service;
 
-import com.saasweb.core.model.CreditNote;
-import com.saasweb.core.repository.CreditNoteRepository;
+import com.saasweb.core.model.Comprobante;
+import com.saasweb.core.model.Sistema;
 
 import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.common.ResourceNotFoundException;
@@ -17,28 +17,27 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @Transactional
 public class CreditNoteService {
 
-    private final CreditNoteRepository repo;
+    private final ComprobanteService comprobantes;
     private final OrderRepository orderRepo;
     private final ArcaInvoiceService arcaInvoiceService;
     private final AdminUserRepository adminUsers;
 
-    public CreditNoteService(CreditNoteRepository repo, OrderRepository orderRepo,
+    public CreditNoteService(ComprobanteService comprobantes, OrderRepository orderRepo,
                              ArcaInvoiceService arcaInvoiceService, AdminUserRepository adminUsers) {
-        this.repo = repo;
+        this.comprobantes = comprobantes;
         this.orderRepo = orderRepo;
         this.arcaInvoiceService = arcaInvoiceService;
         this.adminUsers = adminUsers;
     }
 
     @Transactional(readOnly = true)
-    public List<CreditNote> findByOrder(String orderId) {
-        return repo.findByTenantIdAndOrderIdOrderByCreatedAtDesc(TenantContext.getTenantId(), orderId);
+    public List<Comprobante> findByOrder(String orderId) {
+        return comprobantes.deOrigen(origen(orderId), Comprobante.Clase.NOTA_CREDITO);
     }
 
     /**
@@ -47,7 +46,7 @@ public class CreditNoteService {
      * pide. No toca stock ni el estado del pedido; siempre queda un registro
      * (apruebe o no ARCA), para poder ver el historial de intentos.
      */
-    public CreditNote emit(String orderId, BigDecimal amount, String reason, String createdByDni) {
+    public Comprobante emit(String orderId, BigDecimal amount, String reason, String createdByDni) {
         String tenantId = TenantContext.getTenantId();
         Order order = orderRepo.findByIdAndTenantId(orderId, tenantId)
                 .orElseThrow(() -> ResourceNotFoundException.of("Pedido", orderId));
@@ -65,25 +64,13 @@ public class CreditNoteService {
         InvoiceResult result = arcaInvoiceService.emitirNotaCredito(tenantId, order.getInvoiceType(),
                 order.getInvoicePuntoVenta(), order.getInvoiceNumber(), order.getInvoiceBuyerCuit(), amount);
 
-        CreditNote cn = new CreditNote();
-        cn.setId(UUID.randomUUID().toString());
-        cn.setTenantId(tenantId);
-        cn.setOrderId(orderId);
-        cn.setAmount(amount);
-        cn.setReason(reason == null || reason.isBlank() ? null : reason.trim());
-        cn.setType(result.tipo());
-        cn.setCreatedByDni(createdByDni);
-        cn.setCreatedByName(nameByDni(createdByDni));
-        if (result.aprobado()) {
-            cn.setCae(result.cae());
-            cn.setCaeVencimiento(result.caeVencimiento());
-            cn.setNumber(result.numero());
-            cn.setPuntoVenta(result.puntoVenta());
-            cn.setQrUrl(result.qrUrl());
-        } else {
-            cn.setError(result.error());
-        }
-        return repo.save(cn);
+        return comprobantes.registrar(origen(orderId), Comprobante.Clase.NOTA_CREDITO, result, amount, reason,
+                order.getInvoiceBuyerCuit(), new ComprobanteService.Autor(createdByDni, nameByDni(createdByDni)));
+    }
+
+    /** Las notas de crédito de hoy son de pedidos del ecommerce. */
+    private static ComprobanteService.Origen origen(String orderId) {
+        return new ComprobanteService.Origen(TenantContext.getTenantId(), Sistema.ECOMMERCE, orderId);
     }
 
     private String nameByDni(String dni) {

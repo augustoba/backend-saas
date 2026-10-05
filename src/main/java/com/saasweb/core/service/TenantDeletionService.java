@@ -6,7 +6,7 @@ import com.saasweb.core.repository.TenantRepository;
 
 import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.repository.AdminUserRepository;
-import com.saasweb.core.repository.CreditNoteRepository;
+import com.saasweb.core.repository.ComprobanteRepository;
 import com.saasweb.core.repository.RoleRepository;
 import com.saasweb.core.coupon.CouponRepository;
 import com.saasweb.core.discount.DiscountRepository;
@@ -73,7 +73,7 @@ public class TenantDeletionService {
     private final RoleRepository roleRepo;
     private final ExpenseRepository expenseRepo;
     private final StockMovementRepository stockMovementRepo;
-    private final CreditNoteRepository creditNoteRepo;
+    private final ComprobanteRepository comprobanteRepo;
     private final ExpenseBudgetRepository expenseBudgetRepo;
 
     public TenantDeletionService(TenantRepository tenantRepo, SiteSettingsRepository siteSettingsRepo,
@@ -83,7 +83,7 @@ public class TenantDeletionService {
             MarketingSendRepository marketingSendRepo, PageBlockRepository pageBlockRepo,
             ShiftRepository shiftRepo, SupplierRepository supplierRepo, SizeScaleRepository sizeScaleRepo,
             AdminUserRepository adminUserRepo, RoleRepository roleRepo, ExpenseRepository expenseRepo,
-            StockMovementRepository stockMovementRepo, CreditNoteRepository creditNoteRepo,
+            StockMovementRepository stockMovementRepo, ComprobanteRepository comprobanteRepo,
             ExpenseBudgetRepository expenseBudgetRepo, DominioRepository dominioRepo,
             ConfiguracionService configuracion) {
         this.configuracion = configuracion;
@@ -107,7 +107,7 @@ public class TenantDeletionService {
         this.roleRepo = roleRepo;
         this.expenseRepo = expenseRepo;
         this.stockMovementRepo = stockMovementRepo;
-        this.creditNoteRepo = creditNoteRepo;
+        this.comprobanteRepo = comprobanteRepo;
         this.expenseBudgetRepo = expenseBudgetRepo;
     }
 
@@ -139,7 +139,7 @@ public class TenantDeletionService {
         sizeScaleRepo.deleteAllByTenantId(tenantId);
         expenseRepo.deleteAllByTenantId(tenantId);
         stockMovementRepo.deleteAllByTenantId(tenantId);
-        creditNoteRepo.deleteAllByTenantId(tenantId);
+        comprobanteRepo.deleteAllByTenantId(tenantId);
         expenseBudgetRepo.deleteAllByTenantId(tenantId);
 
         // AdminUser antes que Role (ver javadoc de la clase).

@@ -1,6 +1,6 @@
 package com.saasweb.core.dto;
 
-import com.saasweb.core.model.CreditNote;
+import com.saasweb.core.model.Comprobante;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -19,9 +19,9 @@ public final class CreditNoteDtos {
             String cae, String caeVencimiento, Long number, Integer puntoVenta, String qrUrl,
             String error, String createdByName, Instant createdAt
     ) {
-        public static CreditNoteResponse from(CreditNote cn) {
-            return new CreditNoteResponse(cn.getId(), cn.getOrderId(), cn.getAmount(), cn.getReason(), cn.getType(),
-                    cn.getCae(), cn.getCaeVencimiento(), cn.getNumber(), cn.getPuntoVenta(), cn.getQrUrl(),
+        public static CreditNoteResponse from(Comprobante cn) {
+            return new CreditNoteResponse(cn.getId(), cn.getOrigenId(), cn.getImporte(), cn.getMotivo(), cn.getTipo(),
+                    cn.getCae(), cn.getCaeVencimiento(), cn.getNumero(), cn.getPuntoVenta(), cn.getQrUrl(),
                     cn.getError(), cn.getCreatedByName(), cn.getCreatedAt());
         }
     }

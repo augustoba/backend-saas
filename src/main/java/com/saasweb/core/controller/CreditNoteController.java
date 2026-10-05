@@ -1,6 +1,6 @@
 package com.saasweb.core.controller;
 
-import com.saasweb.core.model.CreditNote;
+import com.saasweb.core.model.Comprobante;
 import com.saasweb.core.dto.CreditNoteDtos;
 import com.saasweb.core.service.CreditNoteService;
 
@@ -33,7 +33,7 @@ public class CreditNoteController {
     @PostMapping
     public ResponseEntity<CreditNoteResponse> emit(@PathVariable String orderId,
             @Valid @RequestBody CreditNoteRequest req, Authentication auth) {
-        CreditNote cn = service.emit(orderId, req.amount(), req.reason(), auth.getName());
+        Comprobante cn = service.emit(orderId, req.amount(), req.reason(), auth.getName());
         return ResponseEntity.status(201).body(CreditNoteResponse.from(cn));
     }
 }
