@@ -145,16 +145,16 @@ cuando no hay filas en ⏳.
 |---|---|
 | 21 diseños de tienda (20 + Clásico) con vocabulario de tienda | ✅ (Fase 19) |
 | Entrega/cancelación parcial de pedidos (estado por línea, agregar ítem) | ✅ (2.3a) |
-| Devolución pura en Cambios | ⏳ |
-| Ajuste masivo de precio | ⏳ |
-| Eliminar producto definitivo (+ borrar fotos en el proveedor) | ⏳ |
-| "Mostrar en promos" + vista `/promos` con fallback a descuentos | ⏳ |
-| Banner promocional emergente | ⏳ |
-| Página "Nosotros" + foto del local | ⏳ |
-| WhatsApp flotante | ⏳ |
+| Devolución pura en Cambios | ✅ (2.4a) |
+| Ajuste masivo de precio | ✅ (2.4a) |
+| Eliminar producto definitivo (+ borrar fotos en el proveedor) | ✅ (2.4a; borra fotos si hay API Key/Secret de Cloudinary) |
+| "Mostrar en promos" + vista `/promos` con fallback a descuentos | ✅ (2.4a) |
+| Banner promocional emergente | ✅ (2.4a) |
+| Página "Nosotros" + foto del local | ✅ (2.4a) |
+| WhatsApp flotante | ✅ (2.4a) |
 | "Coordinar por WhatsApp" tras pago aprobado | ⏳ |
-| Título de pestaña "Página \| Tienda" | ⏳ |
-| Medios de pago del local POSNET/Efectivo/Transferencia | ⏳ |
+| Título de pestaña "Página \| Tienda" | ✅ (2.4a) |
+| Medios de pago del local POSNET/Efectivo/Transferencia | ✅ (ya estaban en el SaaS, más completos; etiqueta "Efectivo" de Ruth) |
 | Auditoría de over-fetching del catálogo público | ⏳ |
 
 ## 9. Etapas y avance
@@ -378,3 +378,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back `70c344d`, front `1768d9b` |
 | 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back `062bc55`, front `696efb7` |
 | 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back `99a9dcc` |
+| 2026-10-05 | 2.4a: lo nuevo de Ruth — devolución pura, promos, ajuste masivo, borrado definitivo, banner, Nosotros, WhatsApp flotante, título de pestaña (V14) | back `98314ff` + docs, front `9201944` |
