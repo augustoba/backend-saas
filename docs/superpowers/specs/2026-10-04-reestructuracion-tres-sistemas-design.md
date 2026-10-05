@@ -6,6 +6,66 @@
 
 ---
 
+## 0. Estado al 2026-10-05: qué está hecho y qué falta
+
+Resumen para retomar sin releer todo. El detalle de cada paso está en §9 y los
+commits en §10. Backend: 69 tests en verde; front: build de producción OK.
+
+### Hecho
+
+| Etapa | Qué quedó | Verificado |
+|---|---|---|
+| 0 Preparación | Rama `reestructuracion`, Flyway, ArchUnit + chequeo de arquitectura del front | tests |
+| 1 Núcleo | Tienda con sistema, dominios propios (Caddy on-demand), planes y permisos por sistema, admin inicial, identidad y configuraciones (ARCA, MP, mail, imágenes), comprobantes, imágenes intercambiables | tests + navegador |
+| 2 Ecommerce | Mudado a `ecommerce/`, tablas `ec_`, variantes con código de barras, entrega parcial, factura y cobro MP por el núcleo, **paridad completa con Ruth**, 35 diseños verificados | tests + navegador (compra WhatsApp, venta en el local, cambio) |
+| 3 POS | Tablas `pos_`: artículos, stock, caja con arqueo, ventas con factura ARCA y anulación con nota de crédito, gastos, proveedores, reporte; 10 pantallas propias; sin sitio público | tests + navegador (turno completo con arqueo) |
+| 4 Restaurante | Proyecto `C:\proyectos\restaurante` portado (back + front, tablas `rs_`) sobre los usuarios/roles/tiendas del núcleo; carta pública en la raíz de su dominio | tests + navegador (caja → mesa → cocina → cobro) |
+| 5 Despliegue | **Preparado** en `back/deploy/` (Caddy, systemd, variables, backups, `publicar.sh`, guía) + prueba de carga local (523 req/s, p95 112 ms) | build de producción |
+
+Arreglos que salieron en el camino (detalle en §9): webhook de Mercado Pago
+público (antes 401), catálogo público sin costo/proveedor/IVA/códigos, carta del
+restaurante acotada a su dominio, URLs de un sistema sólo para sus tiendas,
+requests duplicados del front del restaurante (órdenes y **pagos** dobles),
+deadlock al abrir una mesa, el "Administrador" recibe todo permiso nuevo de su sistema.
+
+### Falta — necesita al usuario
+
+- [ ] **Desplegar en el VPS** (Etapa 5c): acceso SSH, dominio de la plataforma
+      (registros A de la raíz y `*`), claves de producción. Seguir
+      `back/deploy/README.md` §1–§5 y repetir la prueba de carga contra el VPS.
+- [ ] **Mercado Pago y ARCA en vivo**: credenciales de prueba (access token de
+      sandbox de MP; certificado + clave de homologación de ARCA, CUIT y punto de
+      venta). Hoy los cubren tests con MP y ARCA simulados (ecommerce y POS).
+- [ ] **Bug del proyecto original del restaurante** (`C:\proyectos\restaurante\frontend`):
+      13 métodos de `orden.service.ts`, `admin.service.ts` y `menu-online.service.ts`
+      se suscriben y devuelven el mismo observable → abrir mesa, agregar ítem,
+      confirmar y **cobrar** se mandan dos veces. En el SaaS ya está arreglado
+      (`shareReplay`); falta decidir si se corrige también en el original.
+- [ ] **Datos de prueba en la base de desarrollo** (`saasweb_v2`): borrarlos no se
+      pudo sin permiso explícito. Quedaron:
+      - Estilos Pequeños: pedidos PED-0003 a PED-0006, cambio CAM-0001 y 3 productos
+        archivados "E2E Etapa2 …".
+      - Kiosco Prueba: cajas #1 y #2 cerradas con sus ventas, artículo "Yerba E2E …",
+        gasto "Luz E2E".
+      - La Parrilla Prueba: un arqueo abierto en "Caja Principal" y una orden de la
+        mesa 2 cobrada ($12.300).
+
+### Falta — técnico (no bloquea)
+
+- [ ] Renombrar "talle"/`size` a "variante" en la API y las pantallas del ecommerce
+      (hoy el alias `Variante.getSize()` mantiene compatibilidad).
+- [ ] Facturación con ARCA en el restaurante (el original no facturaba; el núcleo
+      ya tiene `ArcaInvoiceService` + `ComprobanteService`, como el POS).
+- [ ] Paquete inicial del front: 615 kB contra un límite de 500 kB (advertencia del
+      build de producción; POS y restaurante cargan aparte, no lo afectan).
+- [ ] Código muerto en el front del restaurante: métodos de roles/usuarios de
+      `admin.service.ts` y `admin.component.ts` (esas pantallas ahora son del núcleo).
+- [ ] La ruta vieja `/admin/kiosco` del ecommerce quedó sin entrada en el menú
+      (el POS tiene sus pantallas propias); se puede borrar.
+- [ ] Al terminar: fusionar la rama `reestructuracion` en `main` (back y front).
+
+---
+
 ## 1. Decisiones tomadas (con el usuario)
 
 | Tema | Decisión |
@@ -158,13 +218,17 @@ su tenant/usuario/rol (pasan a ser los del núcleo). Tablas: `rs_sucursal`,
 
 Sitio público: carta online + pedido desde mesa (QR) + reservas.
 
-## 7. Capacidad y costos (estimado, a confirmar con prueba de carga en Etapa 5)
+## 7. Capacidad y costos (estimado; prueba de carga local hecha, falta repetirla en el VPS)
 
 - VPS-1 OVH (2 vCores/4 GB, ~US$ 4,5/mes): SO+Caddy ~0,4 GB, MySQL ~1 GB,
   backend ~1 GB → **15–20 tiendas cómodas, techo estimado 30–50**.
 - Servidor ≈ US$ 0,25/cliente/mes con 20 clientes.
 - Imágenes: el gratis de Cloudinary (~25 créditos) no alcanza para tráfico de
   ~20 tiendas → pasar a R2 (tráfico gratis) cambiando sólo el servicio del núcleo.
+- Medido (2026-10-05, máquina de desarrollo, 40 usuarios concurrentes, tráfico
+  mezclado de los tres sistemas): 523 req/s, 0 errores, p95 112 ms, backend ~490 MB.
+  Estimado para el VPS-1: 150–250 req/s; 20 tiendas chicas piden 20–100 req/s en el
+  pico. Ver `back/deploy/README.md` §Capacidad.
 
 ## 8. Paridad Ecommerce de Ruth → SaaS
 
@@ -288,7 +352,7 @@ actualiza esta sección.
 - [x] (resuelto en 3d) El asistente ya no muestra diseño, color ni vista previa
       cuando el sistema no tiene tienda online (POS, restaurante).
 
-### Etapa 2 — Ecommerce ⏳ (en curso)
+### Etapa 2 — Ecommerce ✅ (salvo Mercado Pago y ARCA en vivo: faltan credenciales)
 - [x] **2.1** Código del ecommerce mudado a `ecommerce/{controller,service,repository,model,dto}`
       (117 clases: los 14 paquetes `core/<feature>` + `modules/ropa` + settings de
       tienda, notas de crédito, PDF/mail de factura y webhook de Mercado Pago).
