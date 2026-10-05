@@ -34,7 +34,7 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
 
     /** Rutas que funcionan aunque el host no sea de ninguna tienda. */
     private static final String[] TENANTLESS_PATHS = {
-            "/api/public/core/dominios/permitido", "/swagger-ui", "/v3/api-docs", "/error"};
+            "/api/public/core/dominios/permitido", "/api/webhooks/", "/swagger-ui", "/v3/api-docs", "/error"};
 
     private final TenantService tenantService;
     private final TenantResolver tenantResolver;

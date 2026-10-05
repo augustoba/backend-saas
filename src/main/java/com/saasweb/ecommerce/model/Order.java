@@ -93,18 +93,6 @@ public class Order {
     private String paymentReference;
 
     /**
-     * Comprobante emitido para esta venta presencial (Fase 14, ver
-     * PLAN_SAAS.md) — sólo tiene sentido para pedidos armados desde el
-     * punto de venta (kiosco). {@code null} = todavía no se emitió nada
-     * (pedidos viejos, o de canal WEB). "TICKET_INTERNO" = comprobante no
-     * fiscal; "FACTURA_C"/"FACTURA_B"/"FACTURA_A" = factura real con CAE
-     * de ARCA (el tipo lo decide `ArcaInvoiceService` según la condición
-     * frente al IVA del tenant y si se cargó CUIT del comprador).
-     */
-    @Column(length = 20)
-    private String invoiceType;
-
-    /**
      * CUIT del comprador, sólo si se cargó al cobrar (habilita Factura A
      * en vez de B para un tenant Responsable Inscripto). Opcional siempre
      * — sin esto, Factura A/B/C se emite igual a consumidor final/DNI.
@@ -112,51 +100,22 @@ public class Order {
     @Column(length = 20)
     private String invoiceBuyerCuit;
 
-    /** CAE (Código de Autorización Electrónico) que devolvió ARCA — sólo con invoiceType = FACTURA_A/B/C aprobada. */
-    @Column(length = 20)
-    private String invoiceCae;
-
-    /** Vencimiento del CAE, formato yyyyMMdd (tal cual lo devuelve ARCA). */
-    @Column(length = 10)
-    private String invoiceCaeVencimiento;
-
-    /** Número de comprobante asignado (correlativo del punto de venta en ARCA, no el `number`/código interno del pedido). */
-    private Long invoiceNumber;
-
-    private Integer invoicePuntoVenta;
-
-    /** Link al QR que exige ARCA en todo comprobante (RG 4892) — se arma una sola vez, al aprobarse el CAE. */
-    @Column(length = 500)
-    private String invoiceQrUrl;
-
     /**
-     * Si se intentó pedir una Factura C y ARCA la rechazó (o falló la
-     * conexión), el detalle queda acá para poder reintentar — la VENTA en
-     * sí no se bloquea por esto: el cliente ya pagó, plantarse esperando a
-     * ARCA no tiene sentido (ver `ArcaInvoiceService`).
+     * Último comprobante fiscal emitido para el pedido (factura de ARCA, aprobada
+     * o rechazada), registrado en el núcleo ({@code core_comprobante}). null =
+     * no se intentó facturar (ticket interno o venta web).
      */
-    @Column(length = 500)
-    private String invoiceError;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "comprobante_id")
+    private com.saasweb.core.model.Comprobante factura;
 
-    /** Sólo para `paymentMethod = MERCADOPAGO` — null para cualquier otro medio. Ver {@link PaymentStatus}. */
-    @Enumerated(EnumType.STRING)
-    @Column(length = 20)
-    private PaymentStatus paymentStatus;
-
-    /** Id de la preferencia de pago creada en Mercado Pago (ver `core/payment/MercadoPagoService`). */
-    @Column(length = 100)
-    private String mpPreferenceId;
-
-    /** Link de pago (`init_point`) devuelto al crear la preferencia — para poder reofrecerlo si el cliente no pagó todavía. */
-    @Column(length = 500)
-    private String mpCheckoutUrl;
-
-    /** Id del pago aprobado en Mercado Pago, una vez confirmado por webhook. */
-    @Column(length = 100)
-    private String mpPaymentId;
+    /** Cobro online con Mercado Pago ({@code core_cobro_mp}); null si no se pagó online. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cobro_id")
+    private com.saasweb.core.model.CobroMp cobro;
 
     /**
-     * Mercado Pago aprobó el pago pero {@code OrderService#doConfirm} no
+     * Mercado Pago aprobó el pago pero la confirmación no
      * pudo confirmar el pedido solo (ej. se quedó sin stock justo antes de
      * que se apruebe) — el pedido queda igual en PENDIENTE, sin tocar
      * stock, pero esto queda como aviso visible en el panel para que
@@ -366,100 +325,12 @@ public class Order {
         this.paymentReference = paymentReference;
     }
 
-    public String getInvoiceType() {
-        return invoiceType;
-    }
-
-    public void setInvoiceType(String invoiceType) {
-        this.invoiceType = invoiceType;
-    }
-
     public String getInvoiceBuyerCuit() {
         return invoiceBuyerCuit;
     }
 
     public void setInvoiceBuyerCuit(String invoiceBuyerCuit) {
         this.invoiceBuyerCuit = invoiceBuyerCuit;
-    }
-
-    public String getInvoiceCae() {
-        return invoiceCae;
-    }
-
-    public void setInvoiceCae(String invoiceCae) {
-        this.invoiceCae = invoiceCae;
-    }
-
-    public String getInvoiceCaeVencimiento() {
-        return invoiceCaeVencimiento;
-    }
-
-    public void setInvoiceCaeVencimiento(String invoiceCaeVencimiento) {
-        this.invoiceCaeVencimiento = invoiceCaeVencimiento;
-    }
-
-    public Long getInvoiceNumber() {
-        return invoiceNumber;
-    }
-
-    public void setInvoiceNumber(Long invoiceNumber) {
-        this.invoiceNumber = invoiceNumber;
-    }
-
-    public Integer getInvoicePuntoVenta() {
-        return invoicePuntoVenta;
-    }
-
-    public void setInvoicePuntoVenta(Integer invoicePuntoVenta) {
-        this.invoicePuntoVenta = invoicePuntoVenta;
-    }
-
-    public String getInvoiceQrUrl() {
-        return invoiceQrUrl;
-    }
-
-    public void setInvoiceQrUrl(String invoiceQrUrl) {
-        this.invoiceQrUrl = invoiceQrUrl;
-    }
-
-    public String getInvoiceError() {
-        return invoiceError;
-    }
-
-    public void setInvoiceError(String invoiceError) {
-        this.invoiceError = invoiceError;
-    }
-
-    public PaymentStatus getPaymentStatus() {
-        return paymentStatus;
-    }
-
-    public void setPaymentStatus(PaymentStatus paymentStatus) {
-        this.paymentStatus = paymentStatus;
-    }
-
-    public String getMpPreferenceId() {
-        return mpPreferenceId;
-    }
-
-    public void setMpPreferenceId(String mpPreferenceId) {
-        this.mpPreferenceId = mpPreferenceId;
-    }
-
-    public String getMpCheckoutUrl() {
-        return mpCheckoutUrl;
-    }
-
-    public void setMpCheckoutUrl(String mpCheckoutUrl) {
-        this.mpCheckoutUrl = mpCheckoutUrl;
-    }
-
-    public String getMpPaymentId() {
-        return mpPaymentId;
-    }
-
-    public void setMpPaymentId(String mpPaymentId) {
-        this.mpPaymentId = mpPaymentId;
     }
 
     public String getPaymentIssueNote() {
@@ -557,4 +428,52 @@ public class Order {
     public void setConfirmedByName(String confirmedByName) {
         this.confirmedByName = confirmedByName;
     }
+
+    public com.saasweb.core.model.Comprobante getFactura() {
+        return factura;
+    }
+
+    public void setFactura(com.saasweb.core.model.Comprobante factura) {
+        this.factura = factura;
+    }
+
+    public com.saasweb.core.model.CobroMp getCobro() {
+        return cobro;
+    }
+
+    public void setCobro(com.saasweb.core.model.CobroMp cobro) {
+        this.cobro = cobro;
+    }
+
+    // --- Vista de la factura y el cobro (vienen del núcleo; la API no cambió) ---
+
+    private boolean facturaAprobada() {
+        return factura != null && factura.aprobado();
+    }
+
+    /**
+     * "FACTURA_A/B/C" si hay factura aprobada; "TICKET_INTERNO" para una venta en
+     * el local ya cobrada sin factura (o con la factura rechazada); null si no aplica.
+     */
+    public String getInvoiceType() {
+        if (facturaAprobada()) return factura.getTipo();
+        return channel == SaleChannel.LOCAL && status == OrderStatus.PROCESADO ? "TICKET_INTERNO" : null;
+    }
+
+    public String getInvoiceCae() { return facturaAprobada() ? factura.getCae() : null; }
+    public String getInvoiceCaeVencimiento() { return facturaAprobada() ? factura.getCaeVencimiento() : null; }
+    public Long getInvoiceNumber() { return facturaAprobada() ? factura.getNumero() : null; }
+    public Integer getInvoicePuntoVenta() { return facturaAprobada() ? factura.getPuntoVenta() : null; }
+    public String getInvoiceQrUrl() { return facturaAprobada() ? factura.getQrUrl() : null; }
+
+    /** Motivo del rechazo de ARCA del último intento; null si se aprobó o no se intentó. */
+    public String getInvoiceError() { return factura != null && !factura.aprobado() ? factura.getError() : null; }
+
+    public PaymentStatus getPaymentStatus() {
+        return cobro == null ? null : PaymentStatus.valueOf(cobro.getEstado().name());
+    }
+
+    public String getMpPreferenceId() { return cobro == null ? null : cobro.getPreferenceId(); }
+    public String getMpCheckoutUrl() { return cobro == null ? null : cobro.getCheckoutUrl(); }
+    public String getMpPaymentId() { return cobro == null ? null : cobro.getPaymentId(); }
 }

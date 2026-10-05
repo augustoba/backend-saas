@@ -324,8 +324,21 @@ actualiza esta sección.
       - Verificado: EntregaParcialTest (2 casos), 55/55; E2E en el navegador
         (entregar 1 de 2 → sigue pendiente; cancelar el otro → PROCESADO cobrando
         sólo lo entregado), sin errores de consola.
-- [ ] **2.3b** Factura y cobro de Mercado Pago del pedido vía el núcleo
-      (`core_comprobante` para las facturas, `core_cobro_mp` + evento)
+- [x] **2.3b** Factura y cobro de Mercado Pago del pedido vía el núcleo (V13):
+      - `core_cobro_mp` + `CobroService` (crea la preferencia con la cuenta de la
+        tienda; la referencia externa es el id del cobro) + evento
+        `CobroActualizado` que el ecommerce escucha (`OrderService#onCobroActualizado`).
+        El webhook se mudó al núcleo (misma URL).
+      - El pedido referencia `factura` (`core_comprobante`) y `cobro`; sus getters
+        `getInvoice*`/`getPaymentStatus`/`getMp*` se calculan desde ahí (API, PDF,
+        mails y dashboard sin cambios). V13 migra los datos y borra 11 columnas;
+        los cobros migrados usan el id del pedido como id, así las preferencias
+        viejas siguen encontrando su cobro.
+      - **Arreglado** (bug previo): el webhook `/api/webhooks/mercadopago` no estaba
+        entre las rutas públicas → Mercado Pago recibía 401 y los pagos nunca se
+        aplicaban solos. Ahora es público y no depende del host.
+      - Verificado: 55/55 (el test de Mercado Pago pasa por cobro → evento →
+        pedido); V13 en MySQL; pedidos, dashboard y webhook responden.
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -363,4 +376,5 @@ actualiza esta sección.
 | 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back `03eea7e` |
 | 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back `93f817c` |
 | 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back `70c344d`, front `1768d9b` |
-| 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back (ver git log), front `696efb7` |
+| 2026-10-05 | 2.3a: entrega y cancelación parcial de pedidos (V12) | back `062bc55`, front `696efb7` |
+| 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back (ver git log) |

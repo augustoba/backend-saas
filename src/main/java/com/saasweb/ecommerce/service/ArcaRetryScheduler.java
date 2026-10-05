@@ -56,8 +56,8 @@ public class ArcaRetryScheduler {
 
     private void runFor(Tenant t) {
         if (!"FACTURA_ARCA".equals(configuracion.arca().getInvoiceMode())) return;
-        for (Order o : orderRepo.findByTenantIdAndChannelAndStatusAndInvoiceTypeAndInvoiceErrorIsNotNull(
-                t.getId(), SaleChannel.LOCAL, OrderStatus.PROCESADO, "TICKET_INTERNO")) {
+        for (Order o : orderRepo.findByTenantIdAndChannelAndStatusAndFacturaErrorIsNotNull(
+                t.getId(), SaleChannel.LOCAL, OrderStatus.PROCESADO)) {
             try {
                 orderService.retryInvoicing(o.getId());
                 log.info("ARCA: reintento automático OK para el pedido '{}' (tenant '{}').", o.getCode(), t.getSlug());

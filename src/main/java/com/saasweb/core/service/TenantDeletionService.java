@@ -3,6 +3,7 @@ package com.saasweb.core.service;
 import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.core.repository.AdminUserRepository;
+import com.saasweb.core.repository.CobroMpRepository;
 import com.saasweb.core.repository.ComprobanteRepository;
 import com.saasweb.core.repository.DominioRepository;
 import com.saasweb.core.repository.RoleRepository;
@@ -35,17 +36,19 @@ public class TenantDeletionService {
     private final AdminUserRepository adminUserRepo;
     private final RoleRepository roleRepo;
     private final ComprobanteRepository comprobanteRepo;
+    private final CobroMpRepository cobroRepo;
     private final DominioRepository dominioRepo;
     private final ConfiguracionService configuracion;
     private final List<LimpiezaDeTienda> limpiezas;
 
     public TenantDeletionService(TenantRepository tenantRepo, AdminUserRepository adminUserRepo, RoleRepository roleRepo,
-                                 ComprobanteRepository comprobanteRepo, DominioRepository dominioRepo,
+                                 ComprobanteRepository comprobanteRepo, CobroMpRepository cobroRepo, DominioRepository dominioRepo,
                                  ConfiguracionService configuracion, List<LimpiezaDeTienda> limpiezas) {
         this.tenantRepo = tenantRepo;
         this.adminUserRepo = adminUserRepo;
         this.roleRepo = roleRepo;
         this.comprobanteRepo = comprobanteRepo;
+        this.cobroRepo = cobroRepo;
         this.dominioRepo = dominioRepo;
         this.configuracion = configuracion;
         this.limpiezas = limpiezas;
@@ -62,6 +65,7 @@ public class TenantDeletionService {
         limpiezas.forEach(l -> l.borrarDatosDe(tenantId));
 
         comprobanteRepo.deleteAllByTenantId(tenantId);
+        cobroRepo.deleteAllByTenantId(tenantId);
         // AdminUser antes que Role (ver javadoc de la clase).
         adminUserRepo.deleteAllByTenantId(tenantId);
         roleRepo.deleteAllByTenantId(tenantId);

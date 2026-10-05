@@ -55,6 +55,8 @@ public class SecurityConfig {
                                 "/api/settings",
                                 // Lo público de cada sistema y del núcleo (ej: la consulta de Caddy).
                                 "/api/public/**",
+                                // Notificaciones de Mercado Pago: llegan sin token (el tenant va en la URL).
+                                "/api/webhooks/**",
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**",
                                 "/error"
                         ).permitAll()

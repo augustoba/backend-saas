@@ -6,6 +6,14 @@ import com.saasweb.core.common.TenantContext;
 import com.saasweb.ecommerce.model.Order;
 import com.saasweb.ecommerce.service.OrderService;
 import com.saasweb.core.service.TenantService;
+import com.saasweb.core.model.CobroMp;
+import com.saasweb.core.model.Sistema;
+import com.saasweb.core.repository.CobroMpRepository;
+import com.saasweb.core.service.CobroService;
+import com.saasweb.core.service.MercadoPagoService.PaymentInfo;
+import com.saasweb.ecommerce.repository.OrderRepository;
+import org.springframework.transaction.support.TransactionTemplate;
+import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -18,12 +26,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 
 /**
- * Cubre {@link OrderService#confirmFromPayment}, el punto que arregla el
- * aviso de "pago aprobado por Mercado Pago pero no se pudo confirmar solo"
- * (antes quedaba sólo en un log del servidor, invisible para la tienda). No
- * pasa por el webhook real (ese sí necesita la API de Mercado Pago) — llama
- * al service directo, que es la parte que de verdad cambia el estado del
- * pedido.
+ * Pago aprobado por Mercado Pago, por el camino real desde la Etapa 2.3b: el
+ * cobro vive en el núcleo ({@code CobroService}), que publica
+ * {@code CobroActualizado} y el ecommerce confirma el pedido (o deja el aviso
+ * de "pago aprobado pero no se pudo confirmar solo"). No llama a la API de
+ * Mercado Pago: se aplica directo el pago ya "consultado".
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -37,18 +44,41 @@ class OrderMercadoPagoConfirmTest {
     OrderService orderService;
     @Autowired
     TenantService tenantService;
+    @Autowired
+    CobroService cobroService;
+    @Autowired
+    CobroMpRepository cobros;
+    @Autowired
+    OrderRepository orders;
+    @Autowired
+    TransactionTemplate tx;
 
-    /**
-     * {@code confirmFromPayment} normalmente lo llama el webhook dentro de
-     * una request HTTP, con {@code TenantContext} ya seteado por
-     * {@code TenantResolutionFilter}. Llamado directo desde el test (fuera
-     * de una request), hay que setearlo a mano para que encuentre el
-     * pedido — mismo tenant que usó el MockMvc para crearlo.
-     */
-    private Order confirmFromPaymentAsIfFromWebhook(String orderId, String mpPaymentId) {
-        TenantContext.set(tenantService.resolveCurrentTenantId());
+    /** Lo que importa del pedido después del pago (leído dentro de una transacción: el cobro es lazy). */
+    record Resultado(String paymentStatus, String mpPaymentId, String status, String paymentIssueNote) {}
+
+    /** Crea el cobro del pedido y le aplica un pago aprobado, como si viniera del webhook. */
+    private Resultado aprobarPago(String orderId, String mpPaymentId) {
+        String tenantId = tenantService.resolveCurrentTenantId();
+        TenantContext.set(tenantId);
         try {
-            return orderService.confirmFromPayment(orderId, mpPaymentId);
+            String cobroId = tx.execute(s -> {
+                CobroMp c = new CobroMp();
+                c.setId(UUID.randomUUID().toString());
+                c.setTenantId(tenantId);
+                c.setOrigenSistema(Sistema.ECOMMERCE);
+                c.setOrigenId(orderId);
+                CobroMp guardado = cobros.save(c);
+                Order o = orders.findByIdAndTenantId(orderId, tenantId).orElseThrow();
+                o.setCobro(guardado);
+                orders.save(o);
+                return guardado.getId();
+            });
+            tx.executeWithoutResult(s -> cobroService.aplicar(tenantId, new PaymentInfo(mpPaymentId, "approved", cobroId)));
+            return tx.execute(s -> {
+                Order o = orderService.get(orderId);
+                return new Resultado(o.getPaymentStatus().name(), o.getMpPaymentId(), o.getStatus().name(),
+                        o.getPaymentIssueNote());
+            });
         } finally {
             TenantContext.clear();
         }
@@ -89,14 +119,14 @@ class OrderMercadoPagoConfirmTest {
         String productId = createProduct(jwt, 1);
         String orderId = createOrder(productId, 3);
 
-        Order result = confirmFromPaymentAsIfFromWebhook(orderId, "fake-mp-payment-id");
+        Resultado result = aprobarPago(orderId, "fake-mp-payment-id");
 
         // el pago quedó marcado como aprobado (el cliente pagó de verdad)...
-        assertThat(result.getPaymentStatus().name()).isEqualTo("APPROVED");
-        assertThat(result.getMpPaymentId()).isEqualTo("fake-mp-payment-id");
+        assertThat(result.paymentStatus()).isEqualTo("APPROVED");
+        assertThat(result.mpPaymentId()).isEqualTo("fake-mp-payment-id");
         // ...pero el pedido NO se confirmó solo, y queda un aviso legible
-        assertThat(result.getStatus().name()).isEqualTo("PENDIENTE");
-        assertThat(result.getPaymentIssueNote()).contains("Mercado Pago aprobó el pago");
+        assertThat(result.status()).isEqualTo("PENDIENTE");
+        assertThat(result.paymentIssueNote()).contains("Mercado Pago aprobó el pago");
 
         // y el stock no se tocó
         JsonNode product = mapper.readTree(mvc.perform(get("/api/products/" + productId))
@@ -110,11 +140,11 @@ class OrderMercadoPagoConfirmTest {
         String productId = createProduct(jwt, 5);
         String orderId = createOrder(productId, 2);
 
-        Order result = confirmFromPaymentAsIfFromWebhook(orderId, "fake-mp-payment-id-2");
+        Resultado result = aprobarPago(orderId, "fake-mp-payment-id-2");
 
-        assertThat(result.getPaymentStatus().name()).isEqualTo("APPROVED");
-        assertThat(result.getStatus().name()).isEqualTo("PROCESADO");
-        assertThat(result.getPaymentIssueNote()).isNull();
+        assertThat(result.paymentStatus()).isEqualTo("APPROVED");
+        assertThat(result.status()).isEqualTo("PROCESADO");
+        assertThat(result.paymentIssueNote()).isNull();
 
         JsonNode product = mapper.readTree(mvc.perform(get("/api/products/" + productId))
                 .andReturn().getResponse().getContentAsString());

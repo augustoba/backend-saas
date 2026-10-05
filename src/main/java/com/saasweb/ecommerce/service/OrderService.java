@@ -22,13 +22,16 @@ import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.ecommerce.repository.OrderRepository;
 import com.saasweb.ecommerce.repository.ProductRepository;
 import com.saasweb.ecommerce.service.DiscountService.CartLineInput;
-import com.saasweb.core.service.MercadoPagoService;
 import com.saasweb.core.service.MercadoPagoService.PreferenceItem;
-import com.saasweb.core.service.MercadoPagoService.PreferenceResult;
 import com.saasweb.core.service.ArcaInvoiceService;
 import com.saasweb.core.model.ConfigArca;
 import com.saasweb.core.service.ConfiguracionService;
-import com.saasweb.core.config.AppProperties;
+import com.saasweb.core.service.CobroActualizado;
+import com.saasweb.core.service.CobroService;
+import com.saasweb.core.service.ComprobanteService;
+import com.saasweb.core.model.Comprobante;
+import com.saasweb.core.model.Sistema;
+import org.springframework.context.event.EventListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -59,18 +62,18 @@ public class OrderService {
     private final CouponService couponService;
     private final AdminUserRepository adminUsers;
     private final ConfiguracionService configuracion;
-    private final MercadoPagoService mercadoPagoService;
-    private final AppProperties appProperties;
+    private final CobroService cobroService;
+    private final ComprobanteService comprobanteService;
     private final OrderMailService orderMailService;
     private final ArcaInvoiceService arcaInvoiceService;
-    private final com.saasweb.ecommerce.service.InvoiceMailService invoiceMailService;
+    private final InvoiceMailService invoiceMailService;
 
     public OrderService(OrderRepository repo, ProductRepository productRepo,
                         ProductService productService, DiscountService discountService,
                         CouponService couponService, AdminUserRepository adminUsers,
-                        ConfiguracionService configuracion, MercadoPagoService mercadoPagoService,
-                        AppProperties appProperties, OrderMailService orderMailService,
-                        ArcaInvoiceService arcaInvoiceService, com.saasweb.ecommerce.service.InvoiceMailService invoiceMailService,
+                        ConfiguracionService configuracion, CobroService cobroService,
+                        ComprobanteService comprobanteService, OrderMailService orderMailService,
+                        ArcaInvoiceService arcaInvoiceService, InvoiceMailService invoiceMailService,
                         DominioService dominioService) {
         this.dominioService = dominioService;
         this.orderMailService = orderMailService;
@@ -81,8 +84,8 @@ public class OrderService {
         this.couponService = couponService;
         this.adminUsers = adminUsers;
         this.configuracion = configuracion;
-        this.mercadoPagoService = mercadoPagoService;
-        this.appProperties = appProperties;
+        this.cobroService = cobroService;
+        this.comprobanteService = comprobanteService;
         this.arcaInvoiceService = arcaInvoiceService;
         this.invoiceMailService = invoiceMailService;
     }
@@ -308,30 +311,31 @@ public class OrderService {
      * al caller para que el checkout le avise al cliente que reintente.
      */
     private void startMercadoPagoCheckout(Order order) {
-        var settings = configuracion.mp();
-        String accessToken = settings.getMpAccessToken();
-        if (accessToken == null || accessToken.isBlank()) {
-            throw new BadRequestException("Esta tienda todavía no configuró Mercado Pago.");
-        }
-
         List<PreferenceItem> items = order.getLines().stream()
                 .map(l -> new PreferenceItem(l.getProductName(), l.getQuantity(), l.getUnitPrice()))
                 .toList();
-
-        String backend = appProperties.getUrls().getBackend();
         // Vuelta al dominio de la tienda (propio o subdominio), no a uno fijo del deploy.
-        String frontend = dominioService.urlPublica(order.getTenantId());
-        String notificationUrl = backend + "/api/webhooks/mercadopago?tenantId=" + order.getTenantId();
-        String returnBase = frontend + "/mis-pedidos?code=" + order.getCode();
-
-        PreferenceResult pref = mercadoPagoService.createPreference(
-                accessToken, order.getId(), items, notificationUrl,
-                returnBase + "&pago=aprobado", returnBase + "&pago=pendiente", returnBase + "&pago=rechazado");
-
-        order.setPaymentStatus(PaymentStatus.PENDING);
-        order.setMpPreferenceId(pref.preferenceId());
-        order.setMpCheckoutUrl(pref.initPoint());
+        String volverA = dominioService.urlPublica(order.getTenantId()) + "/mis-pedidos?code=" + order.getCode();
+        order.setCobro(cobroService.crear(origen(order), items, volverA));
         repo.save(order);
+    }
+
+    private static ComprobanteService.Origen origen(Order order) {
+        return new ComprobanteService.Origen(order.getTenantId(), Sistema.ECOMMERCE, order.getId());
+    }
+
+    /**
+     * El núcleo avisa que Mercado Pago aprobó o rechazó el cobro de un pedido
+     * (ver {@code CobroService}): se confirma o se cancela el pedido.
+     */
+    @EventListener
+    public void onCobroActualizado(CobroActualizado e) {
+        if (e.sistema() != Sistema.ECOMMERCE) return;
+        switch (e.estado()) {
+            case APPROVED -> confirmFromPayment(e.origenId(), e.paymentId());
+            case REJECTED -> markPaymentRejected(e.origenId());
+            default -> { }
+        }
     }
 
     /**
@@ -393,8 +397,6 @@ public class OrderService {
      */
     public Order confirmFromPayment(String orderId, String mpPaymentId) {
         Order order = get(orderId);
-        order.setMpPaymentId(mpPaymentId);
-        order.setPaymentStatus(PaymentStatus.APPROVED);
         try {
             Order confirmed = confirmLinesInternal(order, pendingLineIds(order), null, "Mercado Pago (pago validado)");
             orderMailService.sendOrderConfirmation(confirmed);
@@ -416,7 +418,6 @@ public class OrderService {
      */
     public void markPaymentRejected(String orderId) {
         Order order = get(orderId);
-        order.setPaymentStatus(PaymentStatus.REJECTED);
         if (order.getStatus() == OrderStatus.PENDIENTE) {
             order.setStatus(OrderStatus.CANCELADO);
             order.setProcessedAt(Instant.now());
@@ -608,23 +609,13 @@ public class OrderService {
     private void applyInvoicing(Order order) {
         ConfigArca settings = configuracion.arca();
         if (!"FACTURA_ARCA".equals(settings.getInvoiceMode()) || !arcaInvoiceService.isAvailable()) {
-            order.setInvoiceType("TICKET_INTERNO");
-            return;
+            return; // ticket interno: no hay comprobante fiscal (ver Order.getInvoiceType)
         }
         var result = arcaInvoiceService.emitirFactura(
                 order.getTenantId(), invoiceLinesFor(order), null, order.getInvoiceBuyerCuit());
-        if (result.aprobado()) {
-            order.setInvoiceType(result.tipo());
-            order.setInvoiceCae(result.cae());
-            order.setInvoiceCaeVencimiento(result.caeVencimiento());
-            order.setInvoiceNumber(result.numero());
-            order.setInvoicePuntoVenta(result.puntoVenta());
-            order.setInvoiceQrUrl(result.qrUrl());
-            order.setInvoiceError(null);
-        } else {
-            order.setInvoiceType("TICKET_INTERNO");
-            order.setInvoiceError(result.error());
-        }
+        order.setFactura(comprobanteService.registrar(origen(order), Comprobante.Clase.FACTURA, result,
+                order.getTotal(), null, order.getInvoiceBuyerCuit(),
+                new ComprobanteService.Autor(order.getConfirmedByDni(), order.getConfirmedByName())));
         try {
             invoiceMailService.send(order);
         } catch (Exception e) {

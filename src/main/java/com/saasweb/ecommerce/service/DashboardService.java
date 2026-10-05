@@ -82,7 +82,7 @@ public class DashboardService {
         LocalDate today = LocalDate.now();
         LocalDate limit = today.plusDays(days);
         List<DashboardDtos.ExpiringCaeItem> out = new ArrayList<>();
-        for (Order o : orderRepo.findByTenantIdAndInvoiceCaeIsNotNull(TenantContext.getTenantId())) {
+        for (Order o : orderRepo.findByTenantIdAndFacturaCaeIsNotNull(TenantContext.getTenantId())) {
             if (o.getInvoiceCaeVencimiento() == null) continue;
             LocalDate vto;
             try {
