@@ -17,6 +17,12 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     /** Para "cargar producto por código de barras" desde el panel — no depende de qué página esté cargada. */
     Optional<Product> findByTenantIdAndBarcodeAndDeletedFalse(String tenantId, String barcode);
 
+    /** Productos (no borrados) que tienen una variante con ese código de barras. */
+    @org.springframework.data.jpa.repository.Query("select p from Product p join p.sizeStocks v"
+            + " where p.tenantId = :tenantId and p.deleted = false and v.codigoBarras = :code")
+    List<Product> findByVarianteBarcode(@org.springframework.data.repository.query.Param("tenantId") String tenantId,
+                                        @org.springframework.data.repository.query.Param("code") String code);
+
     /** Borra los productos del tenant (y sus colecciones @ElementCollection) — ver TenantDeletionService. */
     void deleteAllByTenantId(String tenantId);
     List<Product> findByTenantIdAndActiveTrueAndDeletedFalseOrderByCreatedAtDesc(String tenantId);

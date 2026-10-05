@@ -203,6 +203,8 @@ public class OrderService {
             line.setProductId(p.getId());
             line.setProductName(p.getName());
             line.setSize(item.size());
+            p.getSizeStocks().stream().filter(v -> v.getNombre().equals(item.size())).findFirst()
+                    .ifPresent(v -> line.setVarianteId(v.getId()));
             line.setQuantity(item.quantity());
             line.setUnitPrice(p.getPrice());
             line.setAccepted(true);

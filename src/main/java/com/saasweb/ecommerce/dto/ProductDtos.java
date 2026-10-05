@@ -22,7 +22,12 @@ public final class ProductDtos {
 
     private ProductDtos() {}
 
-    public record SizeStockDto(@NotBlank String size, int stock) {}
+    /**
+     * Una variante (talle, medida…). {@code id} lo asigna el backend (se ignora al
+     * guardar: las variantes se identifican por nombre dentro del producto);
+     * {@code barcode} es opcional y único dentro de la tienda.
+     */
+    public record SizeStockDto(String id, @NotBlank String size, int stock, @Size(max = 64) String barcode) {}
 
     public record ProductRequest(
             @NotBlank @Size(min = 2) String name,
@@ -107,7 +112,7 @@ public final class ProductDtos {
                 params.computeIfAbsent(pp.getGroupId(), k -> new ArrayList<>()).add(pp.getOptionId());
             }
             List<SizeStockDto> stocks = p.getSizeStocks().stream()
-                    .map(s -> new SizeStockDto(s.getSize(), s.getStock()))
+                    .map(s -> new SizeStockDto(s.getId(), s.getNombre(), s.getStock(), s.getCodigoBarras()))
                     .toList();
             return new ProductResponse(
                     p.getId(), p.getName(), p.getDescription(), p.getPrice(), p.getAgeRange(),

@@ -280,7 +280,8 @@ public class Product {
 
     /**
      * Deja exactamente estas variantes, en este orden, conservando las que ya
-     * existían con el mismo nombre (mantienen su id y su código de barras): así
+     * existían con el mismo nombre (mantienen su id; stock y código de barras
+     * se actualizan con lo nuevo): así
      * editar el stock o el orden no borra y recrea todo.
      */
     public void reemplazarVariantes(List<Variante> nuevas) {
@@ -291,6 +292,7 @@ public class Product {
             Variante existente = actuales.remove(n.getNombre());
             if (existente != null) {
                 existente.setStock(n.getStock());
+                existente.setCodigoBarras(n.getCodigoBarras());
                 resultado.add(existente);
             } else {
                 resultado.add(n);

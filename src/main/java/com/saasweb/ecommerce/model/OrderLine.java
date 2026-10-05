@@ -22,6 +22,13 @@ public class OrderLine {
     @Column(name = "size_value", nullable = false)
     private String size;
 
+    /**
+     * Variante vendida (ver {@link Variante}). {@code size} queda como foto del
+     * nombre al momento de la venta, por si la variante después se renombra o se borra.
+     */
+    @Column(name = "variante_id")
+    private String varianteId;
+
     @Column(nullable = false)
     private int quantity;
 
@@ -84,6 +91,14 @@ public class OrderLine {
 
     public void setSize(String size) {
         this.size = size;
+    }
+
+    public String getVarianteId() {
+        return varianteId;
+    }
+
+    public void setVarianteId(String varianteId) {
+        this.varianteId = varianteId;
     }
 
     public int getQuantity() {

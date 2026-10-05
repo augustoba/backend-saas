@@ -88,7 +88,12 @@ public class SeedEcommerce implements CommandLineRunner {
         this.orderRepo = orderRepo;
     }
 
+    /**
+     * En una transacción: los backfills recorren colecciones lazy (ej: las líneas
+     * de los pedidos) y fuera de una sesión de Hibernate fallan.
+     */
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public void run(String... args) {
         String tenantId = tenantService.resolveIdBySlug(props.getTenant().getSlug());
         if (tenantId == null) return;

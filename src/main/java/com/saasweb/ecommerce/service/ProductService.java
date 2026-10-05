@@ -162,8 +162,30 @@ public class ProductService {
     @Transactional(readOnly = true)
     public Product findByBarcode(String barcode) {
         if (barcode == null || barcode.isBlank()) return null;
-        return repo.findByTenantIdAndBarcodeAndDeletedFalse(TenantContext.getTenantId(), barcode.trim())
+        String tenantId = TenantContext.getTenantId();
+        String code = barcode.trim();
+        return repo.findByTenantIdAndBarcodeAndDeletedFalse(tenantId, code)
+                .or(() -> repo.findByVarianteBarcode(tenantId, code).stream().findFirst())
                 .orElse(null);
+    }
+
+    /**
+     * Un código de barras identifica UNA cosa en la tienda: no puede repetirse
+     * entre productos, entre variantes, ni entre un producto y una variante.
+     */
+    private void validarCodigosDeBarras(Product p, String codigoProducto, List<Variante> variantes) {
+        String tenantId = TenantContext.getTenantId();
+        Set<String> vistos = new java.util.HashSet<>();
+        List<String> codigos = new ArrayList<>();
+        if (blankToNull(codigoProducto) != null) codigos.add(codigoProducto.trim());
+        variantes.stream().map(Variante::getCodigoBarras).filter(c -> c != null).forEach(codigos::add);
+        for (String c : codigos) {
+            if (!vistos.add(c)) throw new BadRequestException("El código de barras " + c + " está repetido.");
+            boolean otro = repo.findByTenantIdAndBarcodeAndDeletedFalse(tenantId, c)
+                    .filter(x -> !x.getId().equals(p.getId())).isPresent()
+                    || repo.findByVarianteBarcode(tenantId, c).stream().anyMatch(x -> !x.getId().equals(p.getId()));
+            if (otro) throw new BadRequestException("El código de barras " + c + " ya lo usa otro producto.");
+        }
     }
 
     @Transactional(readOnly = true)
@@ -420,9 +442,12 @@ public class ProductService {
         List<Variante> variantes = new ArrayList<>();
         if (req.sizeStocks() != null) {
             for (SizeStockDto s : req.sizeStocks()) {
-                variantes.add(new Variante(s.size(), Math.max(0, s.stock())));
+                Variante v = new Variante(s.size().trim(), Math.max(0, s.stock()));
+                v.setCodigoBarras(blankToNull(s.barcode()));
+                variantes.add(v);
             }
         }
+        validarCodigosDeBarras(p, req.barcode(), variantes);
         p.reemplazarVariantes(variantes);
 
         p.getParams().clear();

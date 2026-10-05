@@ -292,9 +292,24 @@ actualiza esta sección.
       Verificado contra MySQL: 13 respuestas idénticas; pedido confirmado descuenta
       el stock de la variante; editar el producto conserva el código de barras.
       VarianteTest. 52/52.
-- [ ] **2.2c** API y front hablan de "variantes": código de barras por variante en
-      el formulario de producto y en el lector del POS; la línea del pedido apunta
-      al id de la variante; "edad" pasa a ser una parametría
+- [x] **2.2c** Código de barras por variante (front `1768d9b`):
+      - API: cada variante trae `id` y `barcode`; al guardar se valida que el
+        código sea único en la tienda (entre productos y variantes) y no esté
+        repetido; `by-barcode` también encuentra variantes.
+      - V11: `ec_pedido_linea.variante_id` (la línea guarda qué variante se vendió;
+        el nombre queda como foto). Completado para los pedidos existentes.
+      - Front: campo de código en cada variante del formulario; kiosco y venta en
+        el local suman **la variante escaneada** (`core/utils/barcode-match.ts`).
+      - **Arreglado** (bug latente): el seed del ecommerce recorría pedidos fuera
+        de una transacción y el arranque fallaba en cuanto había un pedido
+        procesado; `SeedEcommerce.run` ahora es `@Transactional`.
+      - Verificado: 53/53; E2E con Playwright (cargar código en una variante →
+        escanearlo en "Venta en el local" suma esa variante), sin errores de consola.
+      - **Decisión del usuario:** "Edad" (`ageRange`) queda como campo opcional del
+        producto (no pasa a parametría): las 35 plantillas la muestran y otros
+        rubros simplemente la dejan vacía.
+      - Queda para más adelante: renombrar "talle"/`size` a "variante" en la API y
+        en las pantallas (hoy el alias `Variante.getSize()` mantiene compatibilidad).
 - [ ] Facturación y cobro vía núcleo
 - [ ] Paridad con Ruth (§8) sin pendientes
 - [ ] 35 diseños + Apariencia funcionando
@@ -330,4 +345,5 @@ actualiza esta sección.
 | 2026-10-04 | 1h: servicio de imágenes intercambiable (Etapa 1 cerrada) | back `ace29d1`, front `70bbb68` |
 | 2026-10-05 | 2.1: ecommerce mudado a su paquete; alta, baja, seed y configuración invertidos | back `f3689f5` |
 | 2026-10-05 | 2.2a: todas las tablas con prefijo ec_/core_ (V8, V9) | back `03eea7e` |
-| 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back (ver git log) |
+| 2026-10-05 | 2.2b: talle a variante con identidad propia (V10) | back `93f817c` |
+| 2026-10-05 | 2.2c: código de barras por variante (V11), seed transaccional | back (ver git log), front `1768d9b` |
