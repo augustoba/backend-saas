@@ -113,6 +113,36 @@ ARCA, Apariencia/colores, bloques de página, 35 diseños).
 
 Sin sitio público: `/` lleva al login.
 
+### 5.1 Reglas del POS (diseño de la Etapa 3)
+
+- **Artículo** = una cosa que se vende con un precio (sin talles ni variantes:
+  eso es del ecommerce). Código de barras opcional y **único en la tienda**.
+  Categoría opcional. Archivar en vez de borrar (las ventas lo referencian).
+- **Stock:** cada cambio deja un `pos_movimiento_stock` (venta, anulación,
+  ingreso de mercadería, ajuste) con el stock resultante. **Vender sin stock
+  registrado está permitido** (en un kiosco el conteo suele estar atrasado y
+  frenar el cobro es peor): el stock queda negativo y la pantalla lo avisa.
+- **Caja = turno.** Una sola caja abierta por tienda. Se abre con el efectivo
+  inicial; durante el turno hay ingresos/egresos manuales (retiros, pago a un
+  proveedor). Sin caja abierta no se vende.
+  Al cerrar se cuenta el efectivo: **esperado** = inicial + ventas en efectivo
+  + ingresos − egresos; **diferencia** = contado − esperado. El cierre guarda el
+  resumen por medio de pago.
+- **Venta:** líneas con foto de nombre/precio/IVA del artículo; medios de pago
+  EFECTIVO (con monto entregado y vuelto), TARJETA (posnet, nº de ticket),
+  TRANSFERENCIA, QR. Número correlativo por tienda (`V-0001`).
+- **Factura:** si la tienda tiene ARCA en "Factura ARCA", la venta se factura
+  con el núcleo (`ArcaInvoiceService` + `core_comprobante`, origen `POS`). Si ARCA
+  falla, la venta **no se cae**: queda como ticket interno con el error y se
+  puede reintentar.
+- **Anular** una venta: sólo con su caja todavía abierta; repone stock, y si
+  estaba facturada emite la nota de crédito.
+- **Gastos y proveedores** propios del POS. Un gasto pagado "de la caja" genera
+  el egreso en la caja abierta.
+
+Sub-pasos: **3a** artículos, categorías y stock (+ alta/baja del sistema);
+**3b** caja y ventas con factura; **3c** gastos y proveedores; **3d** pantallas.
+
 ## 6. Restaurante (`rs_`)
 
 Se porta el proyecto `C:\proyectos\restaurante` (backend + frontend) quitándole
@@ -379,8 +409,19 @@ actualiza esta sección.
       simula el pago: cobro → evento → pedido; ARCA con su cliente simulado).
       Con las credenciales de sandbox se prueba en minutos.
 
-### Etapa 3 — POS ⏳
-- [ ] Artículos, venta rápida con lector, caja con arqueo, stock, gastos
+### Etapa 3 — POS ⏳ (en curso)
+- [x] **3a** Artículos, categorías y stock con tablas propias (V15: `pos_articulo`,
+      `pos_categoria`, `pos_movimiento_stock`), API `/api/pos/{articulos,categorias,stock}`:
+      alta/edición con código de barras único en la tienda, búsqueda por código
+      (lector), ingreso de mercadería (actualiza el costo) y ajuste por conteo, cada
+      cambio con su movimiento y stock resultante; archivar/restaurar; una categoría
+      con artículos no se borra. `InicializadorPos` siembra 3 categorías y 8 artículos
+      de kiosco con códigos; `SeedPos` hace lo mismo con los POS existentes sin
+      artículos ("Kiosco Prueba"); `LimpiezaPos` en la baja. El ecommerce deja de
+      inicializar tiendas POS. PosArticulosTest (4), 64/64; V15 en MySQL.
+- [ ] **3b** Caja (apertura, movimientos, cierre con arqueo) y ventas con factura
+- [ ] **3c** Gastos y proveedores
+- [ ] **3d** Pantallas del POS
 - [ ] Verificado: abrir caja, vender escaneando, facturar, cerrar con arqueo
 
 ### Etapa 4 — Restaurante ⏳
@@ -417,3 +458,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.4b: coordinar por WhatsApp tras MP, credenciales de Cloudinary, catálogo público sin datos internos ni galería (over-fetching) | back `c0184a2`, front `01ab41a` |
 | 2026-10-05 | Etapa 2: verificación de los 35 diseños (home, promos, ficha) | docs |
 | 2026-10-05 | Etapa 2: E2E de compra WhatsApp, venta en el local y cambio (MP y ARCA en vivo esperan credenciales de prueba) | docs, front `57a5f15` |
+| 2026-10-05 | 3a: POS con tablas propias — artículos, categorías y stock (V15) | back (ver git log) |

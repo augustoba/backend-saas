@@ -37,10 +37,6 @@ import java.util.UUID;
  * categorías de gasto y productos de ejemplo del rubro, para poder mostrarla
  * funcionando sin cargar nada a mano. Ver PLAN_SAAS.md Fase 9.
  *
- * <p>Hasta la Etapa 3 también atiende a las tiendas POS: el kiosco todavía usa
- * el catálogo y los pedidos del ecommerce. Cuando el POS tenga sus propias
- * tablas, tendrá su propio inicializador.</p>
- *
  * <p>Ferretería y repuestos no necesitan stock por variante — se les siembra
  * una escala trivial de un solo valor ("Único").</p>
  */
@@ -85,7 +81,7 @@ public class InicializadorEcommerce implements InicializadorDeSistema {
 
     @Override
     public boolean aplicaA(Sistema sistema) {
-        return sistema == Sistema.ECOMMERCE || sistema == Sistema.POS;
+        return sistema == Sistema.ECOMMERCE;
     }
 
     /**
