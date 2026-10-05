@@ -364,7 +364,9 @@ actualiza esta sección.
         pantalla de Cloudinary; sin errores de consola.
 - [x] Facturación y cobro vía núcleo (2.3b)
 - [x] Paridad con Ruth (§8) sin pendientes
-- [ ] 35 diseños + Apariencia funcionando
+- [x] 35 diseños + Apariencia funcionando: los 35 aplicados uno por uno desde
+      Apariencia (API del superadmin) renderizan home, `/promos` y ficha con su
+      `data-layout`, sin errores de consola (Playwright contra MySQL; se restauró "classic").
 - [ ] Verificado: compra WhatsApp y MP, venta en local, cambio, factura ARCA de prueba
 
 ### Etapa 3 — POS ⏳
@@ -403,3 +405,4 @@ actualiza esta sección.
 | 2026-10-05 | 2.3b: factura y cobro MP del pedido al núcleo (V13), webhook público | back `99a9dcc` |
 | 2026-10-05 | 2.4a: lo nuevo de Ruth — devolución pura, promos, ajuste masivo, borrado definitivo, banner, Nosotros, WhatsApp flotante, título de pestaña (V14) | back `98314ff` + docs, front `9201944` |
 | 2026-10-05 | 2.4b: coordinar por WhatsApp tras MP, credenciales de Cloudinary, catálogo público sin datos internos ni galería (over-fetching) | back `c0184a2`, front `01ab41a` |
+| 2026-10-05 | Etapa 2: verificación de los 35 diseños (home, promos, ficha) | docs |
