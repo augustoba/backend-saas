@@ -5,7 +5,6 @@ import com.saasweb.core.dto.RoleDtos;
 import com.saasweb.core.dto.RoleDtos.PermissionInfo;
 import com.saasweb.core.dto.RoleDtos.RoleRequest;
 import com.saasweb.core.dto.RoleDtos.RoleResponse;
-import com.saasweb.core.model.Permission;
 import com.saasweb.core.model.Role;
 import com.saasweb.core.service.RoleService;
 import jakarta.validation.Valid;
@@ -13,7 +12,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -29,26 +27,26 @@ public class RoleController {
 
     @GetMapping("/permissions")
     public List<PermissionInfo> permissions() {
-        return Arrays.stream(Permission.values()).map(PermissionInfo::of).toList();
+        return service.permisosDisponibles().stream().map(PermissionInfo::of).toList();
     }
 
     @GetMapping("/roles")
     public List<RoleResponse> list() {
         return service.findAll().stream()
-                .map(r -> RoleResponse.from(r, service.userCount(r.getId())))
+                .map(r -> RoleResponse.from(r, service.efectivos(r), service.userCount(r.getId())))
                 .toList();
     }
 
     @PostMapping("/roles")
     public ResponseEntity<RoleResponse> create(@Valid @RequestBody RoleRequest req) {
         Role r = service.create(req);
-        return ResponseEntity.status(201).body(RoleResponse.from(r, 0));
+        return ResponseEntity.status(201).body(RoleResponse.from(r, service.efectivos(r), 0));
     }
 
     @PutMapping("/roles/{id}")
     public RoleResponse update(@PathVariable String id, @Valid @RequestBody RoleRequest req) {
         Role r = service.update(id, req);
-        return RoleResponse.from(r, service.userCount(r.getId()));
+        return RoleResponse.from(r, service.efectivos(r), service.userCount(r.getId()));
     }
 
     @DeleteMapping("/roles/{id}")

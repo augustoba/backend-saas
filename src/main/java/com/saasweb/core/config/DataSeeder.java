@@ -21,7 +21,8 @@ import com.saasweb.core.discount.DiscountRepository;
 import com.saasweb.core.param.ParamRepository;
 import com.saasweb.core.product.ProductRepository;
 import com.saasweb.modules.ropa.SizeScaleRepository;
-import com.saasweb.core.model.Permission;
+import com.saasweb.core.service.PermisoService;
+import com.saasweb.core.service.PermisosNucleo;
 import com.saasweb.core.service.AuthService;
 import com.saasweb.core.service.RoleService;
 import com.saasweb.core.page.PageBlockService;
@@ -104,27 +105,14 @@ public class DataSeeder implements CommandLineRunner {
         // Plan "Punto de venta" (Fase 17) — para que el asistente "Crear tienda"
         // tenga más de un plan entre los que elegir (ecommerce vs. sólo POS).
         planService.ensurePosPlan();
-        // Completa `businessModel` en los dos planes de arriba si vienen de
-        // antes de la Fase 17 (columna nueva, filas ya existentes).
-        planService.backfillBusinessModel();
+        planService.ensureRestaurantePlan();
         // Roles, config del sitio y usuarios iniciales: siempre (no son "datos de ejemplo").
         roleService.ensureSystemRole(); // "Superadmin": system=true, siempre todos los permisos, no pertenece a ningún tenant.
-        // "Administrador": todo lo operativo de la tienda, salvo la config de plataforma
-        // (identidad/logo/whatsapp/redes/textos/carrusel/mail) que queda reservada al superadmin.
-        roleService.ensureRole(tenantId, "Administrador",
-                Permission.PRODUCTS_VIEW, Permission.PRODUCTS_MANAGE,
-                Permission.ORDERS_VIEW, Permission.ORDERS_MANAGE,
-                Permission.POS_USE, Permission.EXCHANGES_USE, Permission.CASH_REGISTER_VIEW,
-                Permission.SHIFTS_MANAGE,
-                Permission.PARAMS_MANAGE, Permission.SIZE_SCALES_MANAGE, Permission.SUPPLIERS_MANAGE,
-                Permission.DISCOUNTS_MANAGE, Permission.COUPONS_MANAGE, Permission.MARKETING_MANAGE,
-                Permission.METRICS_VIEW, Permission.PAYMENTS_MANAGE, Permission.USERS_MANAGE,
-                Permission.EXPENSES_MANAGE, Permission.FINANCE_VIEW, Permission.STOCK_MOVEMENTS_VIEW,
-                Permission.DOMAINS_MANAGE);
-        roleService.ensureRole(tenantId, "Vendedor",
-                Permission.ORDERS_VIEW, Permission.ORDERS_MANAGE,
-                Permission.POS_USE, Permission.EXCHANGES_USE,
-                Permission.CASH_REGISTER_VIEW, Permission.SHIFTS_MANAGE, Permission.METRICS_VIEW);
+        // "Administrador" (todo lo de la tienda salvo lo reservado al superadmin)
+        // + los roles que declare el sistema (ej: "Vendedor"). Ver PermisoService.
+        for (Tenant t : tenantService.findAll()) {
+            roleService.ensureRolesPorDefecto(t.getId(), t.getSistema());
+        }
         authService.ensureInitialAdmin(tenantId);
         authService.ensureInitialSuperadmin();
         TenantContext.set(tenantId);
@@ -155,9 +143,8 @@ public class DataSeeder implements CommandLineRunner {
      */
     private void backfillNewPermissions() {
         for (Tenant t : tenantService.findAll()) {
-            roleService.grantPermissionsIfMissing(t.getId(), "Administrador",
-                    Permission.EXPENSES_MANAGE, Permission.FINANCE_VIEW, Permission.STOCK_MOVEMENTS_VIEW,
-                    Permission.DOMAINS_MANAGE);
+            roleService.grantPermissionsIfMissing(t.getId(), t.getSistema(), PermisoService.ADMINISTRADOR,
+                    Set.of("EXPENSES_MANAGE", "FINANCE_VIEW", "STOCK_MOVEMENTS_VIEW", PermisosNucleo.DOMAINS_MANAGE));
         }
     }
 

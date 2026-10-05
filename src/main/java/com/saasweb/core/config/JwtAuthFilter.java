@@ -2,7 +2,7 @@ package com.saasweb.core.config;
 
 import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.model.AdminUser;
-import com.saasweb.core.model.Permission;
+import com.saasweb.core.service.PermisoService;
 import com.saasweb.core.repository.AdminUserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -24,17 +24,19 @@ import java.util.List;
  * Lee `Authorization: Bearer <jwt>` y, si es válido, autentica al usuario con
  * sus permisos actuales (los busca en la base cada request, así un cambio de
  * rol tiene efecto inmediato). Authorities = ROLE_ADMIN + un authority por
- * cada {@link Permission} del rol.
+ * cada permiso del rol (ver {@link PermisoService}).
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
     private final AdminUserRepository users;
+    private final PermisoService permisos;
 
-    public JwtAuthFilter(JwtService jwtService, AdminUserRepository users) {
+    public JwtAuthFilter(JwtService jwtService, AdminUserRepository users, PermisoService permisos) {
         this.jwtService = jwtService;
         this.users = users;
+        this.permisos = permisos;
     }
 
     @Override
@@ -51,8 +53,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (user != null) {
                     List<SimpleGrantedAuthority> authorities = new ArrayList<>();
                     authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-                    for (Permission p : user.permissions()) {
-                        authorities.add(new SimpleGrantedAuthority(p.name()));
+                    for (String p : user.isSystemAdmin() ? permisos.todas() : user.permissions()) {
+                        authorities.add(new SimpleGrantedAuthority(p));
                     }
                     if (user.isSuperAdmin()) {
                         authorities.add(new SimpleGrantedAuthority("SUPERADMIN"));

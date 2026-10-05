@@ -6,15 +6,19 @@ import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.common.ResourceNotFoundException;
 import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.dto.RoleDtos.RoleRequest;
-import com.saasweb.core.model.Permission;
+import com.saasweb.core.model.PermisoDef;
 import com.saasweb.core.model.Role;
+import com.saasweb.core.model.Sistema;
+import com.saasweb.core.model.Tenant;
 import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.core.repository.RoleRepository;
+import com.saasweb.core.repository.TenantRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.EnumSet;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -23,10 +27,15 @@ public class RoleService {
 
     private final RoleRepository repo;
     private final AdminUserRepository users;
+    private final PermisoService permisos;
+    private final TenantRepository tenants;
 
-    public RoleService(RoleRepository repo, AdminUserRepository users) {
+    public RoleService(RoleRepository repo, AdminUserRepository users, PermisoService permisos,
+                       TenantRepository tenants) {
         this.repo = repo;
         this.users = users;
+        this.permisos = permisos;
+        this.tenants = tenants;
     }
 
     @Transactional(readOnly = true)
@@ -96,44 +105,63 @@ public class RoleService {
             superadmin.setId(UUID.randomUUID().toString());
             superadmin.setName("Superadmin");
             superadmin.setSystem(true);
-            superadmin.setPermissions(EnumSet.allOf(Permission.class));
             return repo.save(superadmin);
         });
     }
 
-    public void ensureRole(String tenantId, String name, Permission... perms) {
-        if (repo.findByTenantIdAndNameIgnoreCase(tenantId, name).isEmpty()) {
-            Role r = new Role();
-            r.setId(UUID.randomUUID().toString());
-            r.setTenantId(tenantId);
-            r.setName(name);
-            r.setSystem(false);
-            r.setPermissions(perms.length == 0
-                    ? EnumSet.noneOf(Permission.class) : EnumSet.copyOf(List.of(perms)));
-            repo.save(r);
-        }
+    /**
+     * Crea los roles por defecto del sistema de la tienda ("Administrador" +
+     * los que declare el sistema, ver {@link PermisoService#rolesPorDefecto}).
+     * No retoca roles que ya existen.
+     */
+    public void ensureRolesPorDefecto(String tenantId, Sistema sistema) {
+        permisos.rolesPorDefecto(sistema).forEach((name, claves) -> {
+            if (repo.findByTenantIdAndNameIgnoreCase(tenantId, name).isEmpty()) {
+                Role r = new Role();
+                r.setId(UUID.randomUUID().toString());
+                r.setTenantId(tenantId);
+                r.setName(name);
+                r.setSystem(false);
+                r.setPermissions(new LinkedHashSet<>(claves));
+                repo.save(r);
+            }
+        });
     }
 
     /**
-     * Backfill: {@link #ensureRole} no retoca un rol que ya existe, así que un
-     * permiso agregado al enum después del primer arranque de un tenant nunca
-     * le llega solo (pasó con {@code SHIFTS_MANAGE}, ver PROYECTO.md). Este
-     * método suma los permisos que falten a un rol ya existente, sin tocar
-     * nada si ya los tiene o si el rol no existe en ese tenant.
+     * Backfill: {@link #ensureRolesPorDefecto} no retoca un rol que ya existe,
+     * así que un permiso nuevo nunca le llega solo a un rol viejo. Suma los que
+     * falten (sólo los que existen para el sistema de la tienda), sin tocar nada
+     * si ya los tiene o si el rol no existe.
      */
-    public void grantPermissionsIfMissing(String tenantId, String roleName, Permission... perms) {
+    public void grantPermissionsIfMissing(String tenantId, Sistema sistema, String roleName, Set<String> claves) {
+        Set<String> validas = new LinkedHashSet<>();
+        permisos.paraSistema(sistema).forEach(p -> validas.add(p.clave()));
         repo.findByTenantIdAndNameIgnoreCase(tenantId, roleName).ifPresent(r -> {
             boolean changed = false;
-            for (Permission p : perms) {
-                if (r.getPermissions().add(p)) changed = true;
+            for (String c : claves) {
+                if (validas.contains(c) && r.getPermissions().add(c)) changed = true;
             }
             if (changed) repo.save(r);
         });
     }
 
-    private java.util.Set<Permission> cleanPermissions(RoleRequest req) {
-        return req.permissions() == null || req.permissions().isEmpty()
-                ? EnumSet.noneOf(Permission.class)
-                : EnumSet.copyOf(req.permissions());
+    /** Permisos que se pueden asignar en la tienda actual (según su sistema). */
+    @Transactional(readOnly = true)
+    public List<PermisoDef> permisosDisponibles() {
+        return permisos.asignables(sistemaActual());
+    }
+
+    /** Claves efectivas de un rol: todas si es el rol de sistema (superadmin). */
+    public Set<String> efectivos(Role r) {
+        return r.isSystem() ? permisos.todas() : r.getPermissions();
+    }
+
+    private Set<String> cleanPermissions(RoleRequest req) {
+        return permisos.validar(sistemaActual(), req.permissions());
+    }
+
+    private Sistema sistemaActual() {
+        return tenants.findById(TenantContext.requireTenantId()).map(Tenant::getSistema).orElse(Sistema.ECOMMERCE);
     }
 }

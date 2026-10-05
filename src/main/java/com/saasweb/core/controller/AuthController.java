@@ -1,5 +1,6 @@
 package com.saasweb.core.controller;
 
+import com.saasweb.core.model.AdminUser;
 import com.saasweb.core.dto.AccountDtos;
 
 import com.saasweb.core.config.JwtService;
@@ -9,6 +10,7 @@ import com.saasweb.core.dto.AdminUserDtos.MeResponse;
 import com.saasweb.core.dto.LoginRequest;
 import com.saasweb.core.dto.TokenResponse;
 import com.saasweb.core.service.AuthService;
+import com.saasweb.core.service.PermisoService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final PermisoService permisos;
 
-    public AuthController(AuthService authService) {
+    public AuthController(AuthService authService, PermisoService permisos) {
         this.authService = authService;
+        this.permisos = permisos;
     }
 
     /** Login del panel de administración. Devuelve el JWT a mandar como Bearer. */
@@ -57,7 +61,8 @@ public class AuthController {
     /** Quién soy y qué permisos tengo (para que el panel muestre/oculte cosas). */
     @GetMapping("/me")
     public MeResponse me(Authentication auth) {
-        return MeResponse.from(authService.get(auth.getName()));
+        AdminUser me = authService.get(auth.getName());
+        return MeResponse.from(me, me.isSystemAdmin() ? permisos.todas() : me.permissions());
     }
 
     /** IP del cliente, respetando el primer hop de {@code X-Forwarded-For} si viene por proxy. */

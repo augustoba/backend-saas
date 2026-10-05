@@ -22,7 +22,7 @@ import java.util.Set;
  * sólo un INSERT/UPDATE, no requiere tocar código.</p>
  */
 @Entity
-@Table(name = "plan")
+@Table(name = "core_plan")
 public class Plan {
 
     @Id
@@ -35,13 +35,13 @@ public class Plan {
     private String name;
 
     /**
-     * "ECOMMERCE" | "POS" (ver {@link BusinessModel}) — determina qué
-     * módulos se le pueden ofrecer (ver {@link Modules#compatibleWith}).
-     * Nullable por compatibilidad con filas de antes de la Fase 17
-     * (tratado como {@code ECOMMERCE} si viene null, ver {@link #getBusinessModel()}).
+     * Sistema al que sirve el plan (ver {@link Sistema}): una tienda sólo puede
+     * tener un plan de su mismo sistema, y el plan sólo ofrece los módulos
+     * que tienen sentido para ese sistema (ver {@link Modules#compatibleWith}).
      */
-    @Column(name = "business_model", length = 20)
-    private String businessModel;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Sistema sistema = Sistema.ECOMMERCE;
 
     /** null = sin límite. */
     private Integer maxProducts;
@@ -56,7 +56,7 @@ public class Plan {
      * que activar/desactivar por plan.
      */
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "plan_module", joinColumns = @JoinColumn(name = "plan_id"))
+    @CollectionTable(name = "core_plan_modulo", joinColumns = @JoinColumn(name = "plan_id"))
     @Column(name = "module_key", length = 40)
     private Set<String> enabledModules = new LinkedHashSet<>();
 
@@ -91,13 +91,12 @@ public class Plan {
         this.name = name;
     }
 
-    /** null (filas de antes de la Fase 17) se trata como {@link BusinessModel#ECOMMERCE}. */
-    public String getBusinessModel() {
-        return businessModel != null ? businessModel : BusinessModel.ECOMMERCE;
+    public Sistema getSistema() {
+        return sistema;
     }
 
-    public void setBusinessModel(String businessModel) {
-        this.businessModel = businessModel;
+    public void setSistema(Sistema sistema) {
+        this.sistema = sistema;
     }
 
     public Integer getMaxProducts() {

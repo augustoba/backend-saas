@@ -1,7 +1,7 @@
 package com.saasweb.core.service;
 
 import com.saasweb.core.common.BadRequestException;
-import com.saasweb.core.model.BusinessModel;
+import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.model.Plan;
 import com.saasweb.core.controller.PlanController;
@@ -42,6 +42,7 @@ public class PlanService {
     }
 
     public static final String POS_SLUG = "punto-de-venta";
+    public static final String RESTAURANTE_SLUG = "restaurante";
 
     /**
      * Crea el plan "Ecommerce" (fallback histórico, ver {@code DEFAULT_SLUG})
@@ -59,12 +60,11 @@ public class PlanService {
             created.setId(UUID.randomUUID().toString());
             created.setSlug(DEFAULT_SLUG);
             created.setName("Ecommerce");
-            created.setBusinessModel(BusinessModel.ECOMMERCE);
+            created.setSistema(Sistema.ECOMMERCE);
             created.setMaxProducts(null); // sin límite: todavía no hay planes de negocio definidos
             created.setMaxAdminUsers(null);
             created.setEnabledModules(new LinkedHashSet<>(
-                    Set.of("ropa", Modules.SOCIAL_SHARE, Modules.MERCADOPAGO, Modules.ECOMMERCE_SITE,
-                            Modules.ARCA_INVOICING)));
+                    Set.of(Modules.ROPA, Modules.SOCIAL_SHARE, Modules.MERCADOPAGO, Modules.ARCA_INVOICING)));
             created.setShowPlatformBranding(false);
             return repo.save(created);
         });
@@ -81,32 +81,35 @@ public class PlanService {
             created.setId(UUID.randomUUID().toString());
             created.setSlug(POS_SLUG);
             created.setName("Punto de venta");
-            created.setBusinessModel(BusinessModel.POS);
+            created.setSistema(Sistema.POS);
             created.setMaxProducts(null);
             created.setMaxAdminUsers(null);
-            created.setEnabledModules(new LinkedHashSet<>(Set.of(Modules.POS, Modules.ARCA_INVOICING)));
+            created.setEnabledModules(new LinkedHashSet<>(Set.of(Modules.ARCA_INVOICING)));
             created.setShowPlatformBranding(false);
             return repo.save(created);
         });
     }
 
-    /**
-     * Completa `businessModel` de los dos planes que siembra esta clase
-     * para el caso de filas que ya existían de antes de la Fase 17 —
-     * idempotente (siempre el mismo valor para ese slug), corre en cada
-     * arranque. Un plan con slug desconocido (creado a mano por SQL, fuera
-     * de estos dos) queda con `businessModel=null`, tratado como ECOMMERCE
-     * por {@link Plan#getBusinessModel()} — la opción menos restrictiva.
-     */
-    public void backfillBusinessModel() {
-        repo.findBySlug(DEFAULT_SLUG).ifPresent(p -> {
-            p.setBusinessModel(BusinessModel.ECOMMERCE);
-            repo.save(p);
+    /** Plan "Restaurante": el de partida para las tiendas del sistema restaurante. */
+    public Plan ensureRestaurantePlan() {
+        return repo.findBySlug(RESTAURANTE_SLUG).orElseGet(() -> {
+            Plan created = new Plan();
+            created.setId(UUID.randomUUID().toString());
+            created.setSlug(RESTAURANTE_SLUG);
+            created.setName("Restaurante");
+            created.setSistema(Sistema.RESTAURANTE);
+            created.setEnabledModules(new LinkedHashSet<>(Set.of(Modules.MERCADOPAGO, Modules.ARCA_INVOICING)));
+            return repo.save(created);
         });
-        repo.findBySlug(POS_SLUG).ifPresent(p -> {
-            p.setBusinessModel(BusinessModel.POS);
-            repo.save(p);
-        });
+    }
+
+    /** El plan de partida de cada sistema (para altas que no eligen plan). */
+    public Plan defaultFor(Sistema sistema) {
+        return switch (sistema) {
+            case ECOMMERCE -> ensureDefault();
+            case POS -> ensurePosPlan();
+            case RESTAURANTE -> ensureRestaurantePlan();
+        };
     }
 
     @Transactional(readOnly = true)
@@ -146,7 +149,7 @@ public class PlanService {
 
     /**
      * Edita límites/módulos/branding de un plan ya existente — el slug y el
-     * `businessModel` no se tocan (identificadores estables; reclasificar
+     * `sistema` no se tocan (identificadores estables; reclasificar
      * un plan de Ecommerce a POS con tiendas ya usándolo sería disruptivo).
      * `enabledModules` se filtra contra {@link Modules#compatibleWith} —
      * defensa en profundidad: el editor del panel ya sólo ofrece tildar
@@ -157,7 +160,7 @@ public class PlanService {
     public Plan update(String id, String name, Integer maxProducts, Integer maxAdminUsers,
                         Set<String> enabledModules, boolean showPlatformBranding) {
         Plan plan = repo.findById(id).orElseThrow(() -> ResourceNotFoundException.of("Plan", id));
-        Set<String> compatible = Modules.compatibleWith(plan.getBusinessModel());
+        Set<String> compatible = Modules.compatibleWith(plan.getSistema());
         Set<String> filtered = new LinkedHashSet<>(enabledModules);
         filtered.retainAll(compatible);
         plan.setName(name);

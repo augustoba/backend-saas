@@ -3,10 +3,9 @@ package com.saasweb.core.model;
 import java.util.Set;
 
 /**
- * Claves de módulo válidas para {@link Plan#getEnabledModules()} — sólo
- * documentan qué strings existen. Desde la Fase 17, {@link #compatibleWith}
- * sí valida server-side que un plan no tenga módulos incompatibles con su
- * {@link BusinessModel} (antes era laxo del todo).
+ * Claves de módulo de {@link Plan#getEnabledModules()}: funciones extra que un
+ * plan puede prender o apagar. Qué sitio público tiene una tienda (o si no
+ * tiene) ya no es un módulo: lo decide su {@link Sistema}.
  */
 public final class Modules {
 
@@ -15,58 +14,31 @@ public final class Modules {
 
     /**
      * Botón "Publicar en redes" del formulario/listado de productos
-     * (comparte foto + texto vía la Web Share API del celular del admin —
-     * no usa la API de Meta, no hay nada que configurar del lado del
-     * backend además de este flag).
+     * (comparte foto + texto vía la Web Share API del celular del admin).
      */
     public static final String SOCIAL_SHARE = "SOCIAL_SHARE";
 
     /**
-     * Checkout con pago online real vía Mercado Pago (Fase 13) — cada
-     * tenant carga sus propias credenciales (ver
-     * `SiteSettings.mpAccessToken`/`mpPublicKey`/`mpEnabled`), este flag
-     * sólo habilita que la opción exista para ese plan.
+     * Cobro online con Mercado Pago — cada tenant carga sus propias
+     * credenciales; este flag sólo habilita que la opción exista para el plan.
      */
     public static final String MERCADOPAGO = "MERCADOPAGO";
 
     /**
-     * El sitio público en sí (Fase 14) — sin este módulo, `TenantResolutionFilter`
-     * bloquea las rutas públicas (mismo criterio que una tienda pausada):
-     * el tenant sólo existe para el panel de administración, no tiene
-     * vidriera. Pensado para negocios de venta puramente presencial
-     * (kiosco, casa de repuestos) que contratan sólo el punto de venta, sin
-     * página web.
-     */
-    public static final String ECOMMERCE_SITE = "ECOMMERCE_SITE";
-
-    /**
-     * Punto de venta presencial con código de barras — hoy (Fase 14,
-     * arrancando) esto sigue viviendo en la misma pantalla "Venta en el
-     * local" que ya existía sin gate; este módulo es el que, más adelante,
-     * decide si un tenant ve esa pantalla (con o sin `ECOMMERCE_SITE`) o la
-     * pantalla dedicada de kiosco, todavía sin construir.
-     */
-    public static final String POS = "POS";
-
-    /**
-     * Factura electrónica real vía ARCA/AFIP (Fase 14) — cada tenant carga
-     * su propio CUIT + certificado (ver `SiteSettings.arca*`), este flag
-     * sólo habilita que la opción exista para ese plan. Sin este módulo (o
-     * sin credenciales cargadas), el punto de venta sólo puede emitir
-     * ticket interno, no fiscal.
+     * Factura electrónica real vía ARCA/AFIP — cada tenant carga su CUIT y
+     * certificado. Sin este módulo sólo se emite ticket interno, no fiscal.
      */
     public static final String ARCA_INVOICING = "ARCA_INVOICING";
 
-    /**
-     * Qué módulos tiene sentido ofrecerle a un plan de este
-     * {@link BusinessModel}. `ARCA_INVOICING` es el único que aplica a los
-     * dos: una tienda ecommerce también factura sus ventas presenciales
-     * ("Venta en el local"), no sólo el kiosco dedicado.
-     */
-    public static Set<String> compatibleWith(String businessModel) {
-        if (BusinessModel.POS.equals(businessModel)) {
-            return Set.of(POS, ARCA_INVOICING);
-        }
-        return Set.of(ECOMMERCE_SITE, SOCIAL_SHARE, MERCADOPAGO, ARCA_INVOICING);
+    /** Plantilla de datos de ejemplo de indumentaria (talles, parametrías). */
+    public static final String ROPA = "ropa";
+
+    /** Qué módulos tiene sentido ofrecerle a un plan de ese sistema. */
+    public static Set<String> compatibleWith(Sistema sistema) {
+        return switch (sistema) {
+            case ECOMMERCE -> Set.of(ROPA, SOCIAL_SHARE, MERCADOPAGO, ARCA_INVOICING);
+            case POS -> Set.of(ARCA_INVOICING);
+            case RESTAURANTE -> Set.of(MERCADOPAGO, ARCA_INVOICING);
+        };
     }
 }

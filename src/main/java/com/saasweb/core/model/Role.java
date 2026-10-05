@@ -5,12 +5,11 @@ import com.saasweb.core.service.RoleService;
 import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
- * Rol del panel: un nombre + un conjunto de {@link Permission}. El admin puede
+ * Rol del panel: un nombre + un conjunto de claves de permiso (ver {@code PermisoService}; un rol de sistema tiene todas). El admin puede
  * crear roles y tildarles/destildarles permisos. El rol {@code system}
  * ("Superadmin") tiene todos los permisos siempre y no se puede editar ni
  * borrar. "Administrador" es un rol normal (editable) con un subconjunto fijo
@@ -36,18 +35,11 @@ public class Role {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"))
-    @Enumerated(EnumType.STRING)
     @Column(name = "permission", length = 40)
-    private Set<Permission> permissions = new LinkedHashSet<>();
+    private Set<String> permissions = new LinkedHashSet<>();
 
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
-
-    /** Permisos efectivos: todos si es rol de sistema, si no los tildados. */
-    public Set<Permission> effectivePermissions() {
-        return system ? EnumSet.allOf(Permission.class) : EnumSet.copyOf(
-                permissions.isEmpty() ? EnumSet.noneOf(Permission.class) : permissions);
-    }
 
     public String getId() {
         return id;
@@ -81,11 +73,11 @@ public class Role {
         this.system = system;
     }
 
-    public Set<Permission> getPermissions() {
+    public Set<String> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<Permission> permissions) {
+    public void setPermissions(Set<String> permissions) {
         this.permissions = permissions;
     }
 

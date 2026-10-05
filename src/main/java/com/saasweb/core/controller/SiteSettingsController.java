@@ -1,5 +1,6 @@
 package com.saasweb.core.controller;
 
+import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.model.SiteSettings;
 import com.saasweb.core.dto.SiteSettingsDtos;
 
@@ -18,6 +19,7 @@ import com.saasweb.core.dto.SiteSettingsDtos.SettingsResponse;
 import com.saasweb.core.service.SiteSettingsService;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.service.PlanService;
+import com.saasweb.core.service.TenantService;
 import com.saasweb.core.service.ArcaInvoiceService;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -28,10 +30,12 @@ public class SiteSettingsController {
 
     private final SiteSettingsService service;
     private final PlanService planService;
+    private final TenantService tenantService;
     private final ArcaInvoiceService arcaInvoiceService;
 
     public SiteSettingsController(SiteSettingsService service, PlanService planService,
-                                   ArcaInvoiceService arcaInvoiceService) {
+                                   ArcaInvoiceService arcaInvoiceService, TenantService tenantService) {
+        this.tenantService = tenantService;
         this.service = service;
         this.planService = planService;
         this.arcaInvoiceService = arcaInvoiceService;
@@ -50,14 +54,9 @@ public class SiteSettingsController {
         return moduleOn && s.isMpEnabled() && s.getMpAccessToken() != null && !s.getMpAccessToken().isBlank();
     }
 
-    private boolean moduleEnabled(String moduleKey) {
-        var plan = planService.getCurrent();
-        return plan != null && plan.hasModule(moduleKey);
-    }
-
     private SettingsResponse toResponse(SiteSettings s) {
         return SettingsResponse.from(s, socialShareEnabled(), mercadoPagoAvailable(s),
-                moduleEnabled(Modules.POS), moduleEnabled(Modules.ECOMMERCE_SITE),
+                tenantService.sistemaDe(TenantContext.requireTenantId()),
                 arcaInvoiceService.isAvailable(), s.getInvoiceMode());
     }
 

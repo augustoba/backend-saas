@@ -1,6 +1,7 @@
 package com.saasweb.core.service;
 
 import com.saasweb.core.model.Rubro;
+import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.core.dto.TenantAdminDtos;
 
@@ -66,11 +67,13 @@ public class TenantProvisioningService {
     private final SiteSettingsService siteSettingsService;
     private final PageBlockService pageBlockService;
     private final HeroSlideRepository heroSlideRepo;
+    private final RoleService roleService;
 
     public TenantProvisioningService(TenantService tenantService, ParamRepository paramRepo,
                                      SizeScaleRepository sizeScaleRepo, ProductRepository productRepo,
                                      SiteSettingsService siteSettingsService, PageBlockService pageBlockService,
-                                     HeroSlideRepository heroSlideRepo) {
+                                     HeroSlideRepository heroSlideRepo, RoleService roleService) {
+        this.roleService = roleService;
         this.tenantService = tenantService;
         this.paramRepo = paramRepo;
         this.sizeScaleRepo = sizeScaleRepo;
@@ -82,7 +85,7 @@ public class TenantProvisioningService {
 
     public Tenant provision(String name, String slug, Rubro rubro) {
         return provision(new TenantCreateRequest(
-                name, slug, rubro, null, null, null, null, null, null, null, null, null, null, null, null));
+                name, slug, rubro, null, null, null, null, null, null, null, null, null, null, null, null, null));
     }
 
     /**
@@ -95,20 +98,27 @@ public class TenantProvisioningService {
      */
     public Tenant provision(TenantCreateRequest req) {
         Rubro rubro = req.rubro();
-        Tenant tenant = tenantService.create(req.name().trim(), req.slug().trim(), rubro, req.planId());
+        Tenant tenant = tenantService.create(req.name().trim(), req.slug().trim(), rubro, req.sistema(), req.planId());
         String tenantId = tenant.getId();
+        // Roles con los que nace la tienda según su sistema ("Administrador" + los del sistema).
+        roleService.ensureRolesPorDefecto(tenantId, tenant.getSistema());
 
         String layout = blankToNull(req.layout()) != null ? req.layout() : rubro.getDefaultLayout();
         siteSettingsService.createFor(tenantId, req.name().trim(), rubro.getDefaultTheme(), layout,
                 RubroImages.logo(rubro.getLogoEmoji(), rubro.getLogoColor()));
         pageBlockService.ensureDefaultHomeBlocks(tenantId);
-        seedHeroSlides(tenantId, rubro);
         seedExpenseCategories(tenantId);
 
-        switch (rubro) {
-            case ROPA -> seedRopa(tenantId);
-            case FERRETERIA -> seedFerreteria(tenantId);
-            case REPUESTOS -> seedRepuestos(tenantId);
+        // Carrusel y productos de ejemplo según el rubro: sólo para los sistemas
+        // que hoy usan el catálogo (ecommerce y, hasta la Etapa 3, el POS). El
+        // restaurante tiene su propia carta (Etapa 4).
+        if (tenant.getSistema() != Sistema.RESTAURANTE) {
+            seedHeroSlides(tenantId, rubro);
+            switch (rubro) {
+                case ROPA -> seedRopa(tenantId);
+                case FERRETERIA -> seedFerreteria(tenantId);
+                case REPUESTOS -> seedRepuestos(tenantId);
+            }
         }
 
         siteSettingsService.applyOnboardingExtras(tenantId, new SiteSettingsService.OnboardingExtras(

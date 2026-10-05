@@ -48,7 +48,7 @@ class DominioTest {
 
     private Tenant otraTienda() {
         String slug = "otra-" + UUID.randomUUID().toString().substring(0, 8);
-        return tenantService.create("Otra tienda", slug, Rubro.ROPA, null);
+        return tenantService.create("Otra tienda", slug, Rubro.ROPA, null, null);
     }
 
     private String hostAlAzar() {

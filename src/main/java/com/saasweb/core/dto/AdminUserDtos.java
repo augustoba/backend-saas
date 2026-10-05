@@ -50,13 +50,14 @@ public final class AdminUserDtos {
             String id, String nombre, String apellido, String dni, String email,
             String roleName, boolean systemAdmin, boolean superAdmin, java.util.List<String> permissions
     ) {
-        public static MeResponse from(AdminUser u) {
+        /** {@code permisos}: los efectivos (todos si es el rol de sistema, ver {@code PermisoService}). */
+        public static MeResponse from(AdminUser u, java.util.Set<String> permisos) {
             return new MeResponse(
                     u.getId(), u.getNombre(), u.getApellido(), u.getDni(), u.getEmail(),
                     u.getRole() != null ? u.getRole().getName() : null,
                     u.isSystemAdmin(),
                     u.isSuperAdmin(),
-                    u.permissions().stream().map(Enum::name).sorted().toList());
+                    permisos.stream().sorted().toList());
         }
     }
 }

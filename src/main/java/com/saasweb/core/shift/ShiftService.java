@@ -4,7 +4,6 @@ import com.saasweb.core.common.BadRequestException;
 import com.saasweb.core.common.ResourceNotFoundException;
 import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.model.AdminUser;
-import com.saasweb.core.model.Permission;
 import com.saasweb.core.shift.Shift;
 import com.saasweb.core.repository.AdminUserRepository;
 import com.saasweb.core.shift.ShiftRepository;
@@ -72,7 +71,7 @@ public class ShiftService {
         }
         if (!shift.getUserDni().equals(actingDni)) {
             AdminUser acting = users.findByDniForTenant(actingDni, TenantContext.getTenantId()).orElse(null);
-            boolean canForceClose = acting != null && acting.permissions().contains(Permission.CASH_REGISTER_VIEW);
+            boolean canForceClose = acting != null && (acting.isSystemAdmin() || acting.permissions().contains("CASH_REGISTER_VIEW"));
             if (!canForceClose) {
                 throw new BadRequestException("Sólo el dueño del turno (o alguien que puede ver la caja) puede cerrarlo.");
             }

@@ -1,9 +1,7 @@
 package com.saasweb.core.config;
 
 import com.saasweb.core.common.TenantContext;
-import com.saasweb.core.model.Modules;
-import com.saasweb.core.model.Plan;
-import com.saasweb.core.service.PlanService;
+import com.saasweb.core.model.Sistema;
 import com.saasweb.core.service.TenantResolver;
 import com.saasweb.core.service.TenantService;
 import jakarta.servlet.FilterChain;
@@ -40,13 +38,10 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
 
     private final TenantService tenantService;
     private final TenantResolver tenantResolver;
-    private final PlanService planService;
 
-    public TenantResolutionFilter(TenantService tenantService, TenantResolver tenantResolver,
-                                  PlanService planService) {
+    public TenantResolutionFilter(TenantService tenantService, TenantResolver tenantResolver) {
         this.tenantService = tenantService;
         this.tenantResolver = tenantResolver;
-        this.planService = planService;
     }
 
     @Override
@@ -97,14 +92,12 @@ public class TenantResolutionFilter extends OncePerRequestFilter {
     }
 
     /**
-     * Tenant sólo-POS (Fase 14, ver PLAN_SAAS.md) — sin el módulo
-     * `ECOMMERCE_SITE`, no tiene vidriera pública. Mismo criterio que una
+     * Tienda del sistema POS: no tiene sitio público. Mismo criterio que una
      * tienda pausada: el panel de administración sigue libre siempre.
      */
     private boolean isMissingEcommerceSiteForVisitor(String tenantId, HttpServletRequest request) {
         if (tenantId == null) return false;
-        Plan plan = planService.getForTenant(tenantId);
-        if (plan == null || plan.hasModule(Modules.ECOMMERCE_SITE)) return false;
+        if (tenantService.sistemaDe(tenantId) != Sistema.POS) return false;
         return isPublicVisitorRequest(request);
     }
 

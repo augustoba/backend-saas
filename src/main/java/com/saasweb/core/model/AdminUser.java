@@ -49,7 +49,7 @@ public class AdminUser {
 
     /**
      * Superadmin: acceso a configuraciones de "infraestructura del sitio"
-     * (Cloudinary, servicio de mail) que no se gestionan como {@link Permission}
+     * (Cloudinary, servicio de mail) que no se gestionan como permiso
      * normal porque no deben poder auto-otorgarse desde `/admin/usuarios` (ABM de
      * roles). Sólo se setea sembrando la cuenta por variables de entorno
      * (`app.superadmin.*`) o directo en la base — nunca desde la UI de roles.
@@ -77,9 +77,12 @@ public class AdminUser {
     @Column(name = "reset_token_expires_at")
     private Instant resetTokenExpiresAt;
 
-    public java.util.Set<Permission> permissions() {
-        return role != null ? role.effectivePermissions()
-                : java.util.EnumSet.noneOf(Permission.class);
+    /**
+     * Claves de permiso del rol. Un rol de sistema ({@link #isSystemAdmin()})
+     * tiene todas, pero esa lista la arma {@code PermisoService}, no la entidad.
+     */
+    public java.util.Set<String> permissions() {
+        return role != null ? java.util.Set.copyOf(role.getPermissions()) : java.util.Set.of();
     }
 
     public boolean isSystemAdmin() {

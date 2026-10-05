@@ -1,6 +1,6 @@
 package com.saasweb.core.service;
 
-import com.saasweb.core.model.BusinessModel;
+import com.saasweb.core.model.Plan;
 import com.saasweb.core.model.Rubro;
 import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Tenant;
@@ -44,7 +44,7 @@ public class TenantService {
      */
     public Tenant ensureDefault() {
         String slug = props.getTenant().getSlug();
-        return repo.findBySlug(slug).orElseGet(() -> create(props.getTenant().getName(), slug, Rubro.ROPA, null));
+        return repo.findBySlug(slug).orElseGet(() -> create(props.getTenant().getName(), slug, Rubro.ROPA, Sistema.ECOMMERCE, null));
     }
 
     /**
@@ -53,24 +53,25 @@ public class TenantService {
      * defecto (ver PlanService.ensureDefault) — compat con altas que no
      * pasan por el paso del asistente que elige plan (Fase 14).
      */
-    public Tenant create(String name, String slug, Rubro rubro, String planId) {
+    public Tenant create(String name, String slug, Rubro rubro, Sistema sistema, String planId) {
         if (repo.findBySlug(slug).isPresent()) {
             throw new BadRequestException("Ya existe una tienda con ese identificador.");
         }
-        String resolvedPlanId = planId != null && !planId.isBlank() ? planId : planService.ensureDefault().getId();
-        if (!planService.exists(resolvedPlanId)) {
-            throw new BadRequestException("El plan elegido no existe.");
+        // Sin sistema explícito, manda el del plan elegido (o ecommerce si tampoco hay plan).
+        Plan plan = planId != null && !planId.isBlank() ? planService.get(planId) : null;
+        Sistema resolvedSistema = sistema != null ? sistema : plan != null ? plan.getSistema() : Sistema.ECOMMERCE;
+        if (plan == null) plan = planService.defaultFor(resolvedSistema);
+        if (plan.getSistema() != resolvedSistema) {
+            throw new BadRequestException("El plan elegido es para otro sistema.");
         }
+        String resolvedPlanId = plan.getId();
         Tenant t = new Tenant();
         t.setId(UUID.randomUUID().toString());
         t.setSlug(slug);
         t.setName(name);
         t.setRubro(rubro);
         t.setPlanId(resolvedPlanId);
-        // Hasta que el alta pida el sistema explícito (Etapa 1c), sale del
-        // modelo de negocio del plan.
-        t.setSistema(BusinessModel.POS.equals(planService.get(resolvedPlanId).getBusinessModel())
-                ? Sistema.POS : Sistema.ECOMMERCE);
+        t.setSistema(resolvedSistema);
         return repo.save(t);
     }
 
@@ -83,6 +84,12 @@ public class TenantService {
     @Transactional(readOnly = true)
     public String resolveCurrentTenantId() {
         return repo.findFirstByActiveTrueOrderByCreatedAtAsc().map(Tenant::getId).orElse(null);
+    }
+
+    /** Sistema de una tienda (ver {@link Sistema}); ecommerce si no existe. */
+    @Transactional(readOnly = true)
+    public Sistema sistemaDe(String tenantId) {
+        return repo.findById(tenantId).map(Tenant::getSistema).orElse(Sistema.ECOMMERCE);
     }
 
     /** Para el selector de tienda modo demo (ver TenantResolutionFilter). null si el slug no existe. */

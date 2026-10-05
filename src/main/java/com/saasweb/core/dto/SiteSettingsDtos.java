@@ -1,6 +1,7 @@
 package com.saasweb.core.dto;
 
 import com.saasweb.core.model.SiteSettings;
+import com.saasweb.core.model.Sistema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -128,19 +129,11 @@ public final class SiteSettingsDtos {
              * (ver `MercadoPagoConfigResponse`, mismo criterio que SMTP).
              */
             boolean mercadoPagoAvailable,
-            /**
-             * Módulo `POS` habilitado en el plan (Fase 14) — el panel usa
-             * esto para decidir si mostrar "Venta en el local"/el punto de
-             * venta de kiosco en el menú.
-             */
+            /** Sistema de la tienda: decide qué panel y qué sitio público tiene. */
+            Sistema sistema,
+            /** `sistema == POS` (lo sigue leyendo el menú del panel hasta pasar a `sistema`). */
             boolean posEnabled,
-            /**
-             * Módulo `ECOMMERCE_SITE` habilitado en el plan (Fase 14) — un
-             * tenant sin esto no tiene sitio público (`TenantResolutionFilter`
-             * ya bloquea las rutas públicas del lado del backend); el panel
-             * usa este flag para no mostrar pantallas de ecommerce (Catálogo
-             * online, Apariencia, Carrusel, etc.) que no aplican.
-             */
+            /** `sistema == ECOMMERCE`: tiene tienda online (lo sigue leyendo el panel). */
             boolean ecommerceSiteEnabled,
             /**
              * true sólo si el módulo `ARCA_INVOICING` está habilitado en el
@@ -159,7 +152,7 @@ public final class SiteSettingsDtos {
             String arcaCondicionIva
     ) {
         public static SettingsResponse from(SiteSettings s, boolean socialShareEnabled, boolean mercadoPagoAvailable,
-                                             boolean posEnabled, boolean ecommerceSiteEnabled,
+                                             Sistema sistema,
                                              boolean arcaAvailable, String invoiceMode) {
             return new SettingsResponse(
                     s.getStoreName(), s.getWhatsappNumber(), s.getAboutText(),
@@ -176,7 +169,8 @@ public final class SiteSettingsDtos {
                     s.isPaymentQrCardEnabled(), s.getPaymentQrCardImage(),
                     s.getPaymentCardLink(), s.isPaymentCashEnabled(),
                     s.getCloudinaryCloudName(), s.getCloudinaryUploadPreset(),
-                    socialShareEnabled, mercadoPagoAvailable, posEnabled, ecommerceSiteEnabled,
+                    socialShareEnabled, mercadoPagoAvailable,
+                    sistema, sistema == Sistema.POS, sistema == Sistema.ECOMMERCE,
                     arcaAvailable, invoiceMode, s.getArcaCondicionIva());
         }
     }

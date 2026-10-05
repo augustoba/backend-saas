@@ -196,8 +196,25 @@ actualiza esta sección.
       En desarrollo la plataforma es `localhost`: `estilos-pequenos.localhost` anda.
       **V3**: todas las columnas `ENUM` de MySQL pasan a `varchar` (regla del
       proyecto: agregar un valor a un enum de Java no toca la base).
-- [ ] Usuarios/roles/permisos, login, recuperar contraseña
-- [ ] Planes y módulos por sistema
+- [x] **1c** Planes y permisos por sistema:
+      - `core_plan` / `core_plan_modulo` (V4) con `sistema`; planes sembrados
+        "Ecommerce", "Punto de venta" y "Restaurante"; `PlanService.defaultFor(sistema)`.
+        Los módulos `ECOMMERCE_SITE` y `POS` desaparecen: el sitio público lo decide
+        el sistema (POS = sin sitio, `sin_sitio_online`).
+      - Alta de tienda con `sistema` (vacío = el del plan); plan de otro sistema → 400.
+        La tienda nace con sus roles por defecto (antes las tiendas del asistente
+        nacían **sin roles**).
+      - Permisos: el enum `Permission` se reemplaza por catálogos
+        (`CatalogoPermisos`): `PermisosNucleo` en el núcleo y `PermisosEcommerce`,
+        `PermisosPos`, `PermisosRestaurante` (vacío hasta la Etapa 4) en cada
+        sistema. `PermisoService` arma los asignables y los roles por defecto
+        ("Administrador" + "Vendedor"/"Cajero"). Los permisos reservados al
+        superadmin (`PLATFORM_SETTINGS_MANAGE`, `CAROUSEL_MANAGE`) ya **no se pueden
+        asignar** desde el ABM de roles (antes sí).
+      - `/api/settings` y `/api/admin/tenants` devuelven `sistema` (se mantienen
+        `posEnabled`/`ecommerceSiteEnabled`/`businessModel` derivados para el front actual).
+- [ ] Usuarios: alta del admin inicial de cada tienda desde el asistente (hoy sólo
+      la tienda piloto tiene admin; las demás sólo las maneja el superadmin)
 - [ ] Identidad + config ARCA/MP/mail/imágenes (servicio de imágenes intercambiable)
 - [ ] `core_comprobante` + `core_cobro_mp` con origen + evento de cobro
 - [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
@@ -232,3 +249,4 @@ actualiza esta sección.
 | 2026-10-04 | Etapa 0: Flyway (V1), paquetes por sistema, ArchUnit, chequeo de imports del front | back `c375799`, front `958168b` |
 | 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
 | 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back `5786850` |
+| 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back (ver git log) |

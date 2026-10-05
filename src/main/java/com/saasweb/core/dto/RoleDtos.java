@@ -1,6 +1,6 @@
 package com.saasweb.core.dto;
 
-import com.saasweb.core.model.Permission;
+import com.saasweb.core.model.PermisoDef;
 import com.saasweb.core.model.Role;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,25 +14,25 @@ public final class RoleDtos {
 
     public record RoleRequest(
             @NotBlank @Size(max = 60) String name,
-            Set<Permission> permissions
+            Set<String> permissions
     ) {}
 
     public record RoleResponse(
             String id, String name, boolean system,
             List<String> permissions, long userCount
     ) {
-        public static RoleResponse from(Role r, long userCount) {
+        public static RoleResponse from(Role r, Set<String> efectivos, long userCount) {
             return new RoleResponse(
                     r.getId(), r.getName(), r.isSystem(),
-                    r.effectivePermissions().stream().map(Enum::name).sorted().toList(),
+                    efectivos.stream().sorted().toList(),
                     userCount);
         }
     }
 
     /** Catálogo de permisos disponibles (para armar los checkboxes en el panel). */
     public record PermissionInfo(String key, String label) {
-        public static PermissionInfo of(Permission p) {
-            return new PermissionInfo(p.name(), p.getLabel());
+        public static PermissionInfo of(PermisoDef p) {
+            return new PermissionInfo(p.clave(), p.etiqueta());
         }
     }
 }

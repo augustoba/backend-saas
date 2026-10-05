@@ -1,7 +1,7 @@
 package com.saasweb.core.dto;
 
-import com.saasweb.core.model.BusinessModel;
 import com.saasweb.core.model.Modules;
+import com.saasweb.core.model.Sistema;
 import com.saasweb.core.model.Plan;
 import com.saasweb.core.controller.PlanController;
 
@@ -18,7 +18,9 @@ public final class PlanAdminDtos {
 
     public record PlanResponse(
             String id, String slug, String name,
-            /** "ECOMMERCE" | "POS" — ver {@code BusinessModel}. Fijo, no se edita. */
+            /** Sistema del plan (ver {@code Sistema}). Fijo, no se edita. */
+            Sistema sistema,
+            /** Igual a {@code sistema}: lo sigue leyendo el editor de planes del front hasta que pase a `sistema`. */
             String businessModel,
             Integer maxProducts, Integer maxAdminUsers,
             Set<String> enabledModules,
@@ -29,9 +31,9 @@ public final class PlanAdminDtos {
             long tenantCount
     ) {
         public static PlanResponse from(Plan p, long tenantCount) {
-            return new PlanResponse(p.getId(), p.getSlug(), p.getName(), p.getBusinessModel(),
+            return new PlanResponse(p.getId(), p.getSlug(), p.getName(), p.getSistema(), p.getSistema().name(),
                     p.getMaxProducts(), p.getMaxAdminUsers(),
-                    p.getEnabledModules(), Modules.compatibleWith(p.getBusinessModel()),
+                    p.getEnabledModules(), Modules.compatibleWith(p.getSistema()),
                     p.isShowPlatformBranding(), tenantCount);
         }
     }

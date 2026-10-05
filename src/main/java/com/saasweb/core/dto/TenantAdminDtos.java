@@ -4,6 +4,7 @@ import com.saasweb.core.model.Rubro;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.core.service.TenantDeletionService;
 
+import com.saasweb.core.model.Sistema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -44,21 +45,26 @@ public class TenantAdminDtos {
             @Pattern(regexp = "^$|^(circle|square|rectangle)$", message = "Forma de logo desconocida")
             String logoShape,
             /**
-             * Plan comercial a asignar (Fase 14) — define qué módulos tiene
-             * esta tienda (sitio web, punto de venta, o ambos). Vacío/null =
-             * el plan por defecto (compat con altas que no pasan por el
-             * paso nuevo del asistente).
+             * Plan a asignar: tiene que ser del mismo sistema. Vacío = el plan
+             * de partida de ese sistema.
              */
-            String planId) {
+            String planId,
+            /**
+             * Sistema de la tienda (ecommerce, POS o restaurante). Vacío = el
+             * del plan elegido, o ecommerce (compat con el asistente actual).
+             */
+            Sistema sistema) {
     }
 
     public record TenantResponse(String id, String slug, String name, Rubro rubro, String rubroLabel,
                                  boolean active, Instant createdAt,
-                                 /** Módulo `ECOMMERCE_SITE` de su plan — si es false, no tiene sitio público (ver Fase 17). */
+                                 Sistema sistema,
+                                 /** `sistema == ECOMMERCE`: tiene tienda online (lo sigue leyendo el front). */
                                  boolean ecommerceSiteEnabled) {
-        public static TenantResponse from(Tenant t, boolean ecommerceSiteEnabled) {
+        public static TenantResponse from(Tenant t) {
             return new TenantResponse(t.getId(), t.getSlug(), t.getName(), t.getRubro(),
-                    t.getRubro().getLabel(), t.isActive(), t.getCreatedAt(), ecommerceSiteEnabled);
+                    t.getRubro().getLabel(), t.isActive(), t.getCreatedAt(), t.getSistema(),
+                    t.getSistema() == Sistema.ECOMMERCE);
         }
     }
 
