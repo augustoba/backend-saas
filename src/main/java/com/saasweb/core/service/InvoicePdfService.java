@@ -10,7 +10,7 @@ import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
 import com.saasweb.core.order.Order;
 import com.saasweb.core.order.OrderLine;
-import com.saasweb.core.model.SiteSettings;
+import com.saasweb.core.model.Identidad;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -30,7 +30,7 @@ public class InvoicePdfService {
 
     private static final DateTimeFormatter FECHA_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    public byte[] generate(Order order, SiteSettings settings) {
+    public byte[] generate(Order order, Identidad settings) {
         try {
             Document doc = new Document(PageSize.A4, 36, 36, 36, 36);
             ByteArrayOutputStream out = new ByteArrayOutputStream();

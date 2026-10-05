@@ -4,8 +4,8 @@ import com.saasweb.core.service.MercadoPagoService;
 
 import com.saasweb.core.common.TenantContext;
 import com.saasweb.core.order.OrderService;
-import com.saasweb.core.model.SiteSettings;
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.model.ConfigMp;
+import com.saasweb.core.service.ConfiguracionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -36,14 +36,14 @@ public class MercadoPagoWebhookController {
 
     private static final Logger log = LoggerFactory.getLogger(MercadoPagoWebhookController.class);
 
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
     private final MercadoPagoService mercadoPagoService;
     private final OrderService orderService;
 
-    public MercadoPagoWebhookController(SiteSettingsService siteSettingsService,
+    public MercadoPagoWebhookController(ConfiguracionService configuracion,
                                         MercadoPagoService mercadoPagoService,
                                         OrderService orderService) {
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
         this.mercadoPagoService = mercadoPagoService;
         this.orderService = orderService;
     }
@@ -64,7 +64,7 @@ public class MercadoPagoWebhookController {
             String paymentId = dataIdParam != null ? dataIdParam : paymentIdFromBody(body);
             if (paymentId == null || paymentId.isBlank()) return ResponseEntity.ok().build();
 
-            SiteSettings settings = siteSettingsService.get();
+            ConfigMp settings = configuracion.mp();
             String accessToken = settings.getMpAccessToken();
             if (accessToken == null || accessToken.isBlank()) {
                 log.warn("Webhook de Mercado Pago para tenant {} sin Access Token cargado — ignorado.", tenantId);

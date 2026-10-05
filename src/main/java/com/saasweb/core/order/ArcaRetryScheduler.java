@@ -1,7 +1,7 @@
 package com.saasweb.core.order;
 
 import com.saasweb.core.common.TenantContext;
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.model.Tenant;
 import com.saasweb.core.repository.TenantRepository;
 import org.slf4j.Logger;
@@ -23,14 +23,14 @@ public class ArcaRetryScheduler {
     private static final Logger log = LoggerFactory.getLogger(ArcaRetryScheduler.class);
 
     private final TenantRepository tenants;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
     private final OrderRepository orderRepo;
     private final OrderService orderService;
 
-    public ArcaRetryScheduler(TenantRepository tenants, SiteSettingsService siteSettingsService,
+    public ArcaRetryScheduler(TenantRepository tenants, ConfiguracionService configuracion,
                               OrderRepository orderRepo, OrderService orderService) {
         this.tenants = tenants;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
         this.orderRepo = orderRepo;
         this.orderService = orderService;
     }
@@ -50,7 +50,7 @@ public class ArcaRetryScheduler {
     }
 
     private void runFor(Tenant t) {
-        if (!"FACTURA_ARCA".equals(siteSettingsService.get().getInvoiceMode())) return;
+        if (!"FACTURA_ARCA".equals(configuracion.arca().getInvoiceMode())) return;
         for (Order o : orderRepo.findByTenantIdAndChannelAndStatusAndInvoiceTypeAndInvoiceErrorIsNotNull(
                 t.getId(), SaleChannel.LOCAL, OrderStatus.PROCESADO, "TICKET_INTERNO")) {
             try {

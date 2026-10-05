@@ -12,6 +12,7 @@ import com.saasweb.core.param.ParamGroup;
 import com.saasweb.core.param.ParamOption;
 import com.saasweb.core.product.Product;
 import com.saasweb.core.product.ProductParam;
+import com.saasweb.core.repository.IdentidadRepository;
 import com.saasweb.core.repository.SiteSettingsRepository;
 import com.saasweb.core.service.RubroImages;
 import com.saasweb.core.model.Tenant;
@@ -60,6 +61,7 @@ public class DataSeeder implements CommandLineRunner {
     private final ProductRepository productRepo;
     private final HeroSlideRepository heroSlideRepo;
     private final SiteSettingsRepository siteSettingsRepo;
+    private final IdentidadRepository identidadRepo;
     private final OrderRepository orderRepo;
 
     public DataSeeder(AppProperties props,
@@ -74,7 +76,7 @@ public class DataSeeder implements CommandLineRunner {
                       DiscountRepository discountRepo,
                       ProductRepository productRepo,
                       HeroSlideRepository heroSlideRepo,
-                      SiteSettingsRepository siteSettingsRepo,
+                      SiteSettingsRepository siteSettingsRepo, IdentidadRepository identidadRepo,
                       OrderRepository orderRepo) {
         this.props = props;
         this.authService = authService;
@@ -89,6 +91,7 @@ public class DataSeeder implements CommandLineRunner {
         this.productRepo = productRepo;
         this.heroSlideRepo = heroSlideRepo;
         this.siteSettingsRepo = siteSettingsRepo;
+        this.identidadRepo = identidadRepo;
         this.orderRepo = orderRepo;
     }
 
@@ -215,10 +218,12 @@ public class DataSeeder implements CommandLineRunner {
                 log.info("Seed: carrusel completado para tenant '{}' ({} fotos).", t.getSlug(), slides.size());
             }
 
-            siteSettingsRepo.findById(t.getId()).ifPresent(s -> {
-                if (s.getLogoUrl() == null && !"default".equals(s.getTheme())) {
-                    s.setLogoUrl(RubroImages.logo(t.getRubro().getLogoEmoji(), t.getRubro().getLogoColor()));
-                    siteSettingsRepo.save(s);
+            boolean themeDeRubro = siteSettingsRepo.findById(t.getId())
+                    .map(s -> !"default".equals(s.getTheme())).orElse(false);
+            identidadRepo.findById(t.getId()).ifPresent(i -> {
+                if (i.getLogoUrl() == null && themeDeRubro) {
+                    i.setLogoUrl(RubroImages.logo(t.getRubro().getLogoEmoji(), t.getRubro().getLogoColor()));
+                    identidadRepo.save(i);
                     log.info("Seed: logo completado para tenant '{}'.", t.getSlug());
                 }
             });

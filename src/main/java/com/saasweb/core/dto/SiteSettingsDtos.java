@@ -1,5 +1,10 @@
 package com.saasweb.core.dto;
 
+import com.saasweb.core.model.ConfigArca;
+import com.saasweb.core.model.ConfigImagenes;
+import com.saasweb.core.model.ConfigMail;
+import com.saasweb.core.model.ConfigMp;
+import com.saasweb.core.model.Identidad;
 import com.saasweb.core.model.SiteSettings;
 import com.saasweb.core.model.Sistema;
 import jakarta.validation.constraints.Email;
@@ -151,27 +156,32 @@ public final class SiteSettingsDtos {
              */
             String arcaCondicionIva
     ) {
-        public static SettingsResponse from(SiteSettings s, boolean socialShareEnabled, boolean mercadoPagoAvailable,
-                                             Sistema sistema,
-                                             boolean arcaAvailable, String invoiceMode) {
+        /**
+         * Junta la configuración de la tienda online ({@code s}) con la identidad y
+         * las configuraciones del núcleo: la respuesta queda igual que cuando todo
+         * vivía en `site_settings`.
+         */
+        public static SettingsResponse from(SiteSettings s, Identidad i, ConfigImagenes img, ConfigArca arca,
+                                             boolean socialShareEnabled, boolean mercadoPagoAvailable,
+                                             Sistema sistema, boolean arcaAvailable) {
             return new SettingsResponse(
-                    s.getStoreName(), s.getWhatsappNumber(), s.getAboutText(),
-                    s.getInstagram(), s.getFacebookUrl(), s.getLogoUrl(),
-                    s.getLogoShape() != null ? s.getLogoShape() : "circle",
+                    i.getStoreName(), i.getWhatsappNumber(), i.getAboutText(),
+                    i.getInstagram(), i.getFacebookUrl(), i.getLogoUrl(),
+                    i.getLogoShape() != null ? i.getLogoShape() : "circle",
                     s.getTheme() != null ? s.getTheme() : "default",
                     s.getLayout() != null ? s.getLayout() : "classic",
-                    s.getBrandColor(),
+                    i.getBrandColor(),
                     s.getHeaderColor(), s.getFooterColor(), s.getTextColor(), s.getPageBackgroundColor(),
-                    s.getWhatsappIntro(), s.getWhatsappClosing(), s.getStoreAddress(),
+                    s.getWhatsappIntro(), s.getWhatsappClosing(), i.getStoreAddress(),
                     s.getHelpText(), s.getFaqText(),
                     s.isPaymentTransferEnabled(), s.getPaymentTransferAlias(),
                     s.isPaymentQrTransferEnabled(), s.getPaymentQrTransferImage(),
                     s.isPaymentQrCardEnabled(), s.getPaymentQrCardImage(),
                     s.getPaymentCardLink(), s.isPaymentCashEnabled(),
-                    s.getCloudinaryCloudName(), s.getCloudinaryUploadPreset(),
+                    img.getCloudinaryCloudName(), img.getCloudinaryUploadPreset(),
                     socialShareEnabled, mercadoPagoAvailable,
                     sistema, sistema == Sistema.POS, sistema == Sistema.ECOMMERCE,
-                    arcaAvailable, invoiceMode, s.getArcaCondicionIva());
+                    arcaAvailable, arca.getInvoiceMode(), arca.getArcaCondicionIva());
         }
     }
 
@@ -189,7 +199,7 @@ public final class SiteSettingsDtos {
 
     /** {@code accessToken} nunca se devuelve: sólo si hay uno guardado (accessTokenSet). */
     public record MercadoPagoConfigResponse(boolean mpEnabled, boolean accessTokenSet, String publicKey) {
-        public static MercadoPagoConfigResponse from(SiteSettings s) {
+        public static MercadoPagoConfigResponse from(ConfigMp s) {
             return new MercadoPagoConfigResponse(
                     s.isMpEnabled(),
                     s.getMpAccessToken() != null && !s.getMpAccessToken().isBlank(),
@@ -220,7 +230,7 @@ public final class SiteSettingsDtos {
             boolean arcaEnabled, boolean arcaModoPrueba, String cuit, Integer puntoVenta,
             String condicionIva, boolean certificadoSet, boolean clavePrivadaSet, String invoiceMode
     ) {
-        public static ArcaConfigResponse from(SiteSettings s) {
+        public static ArcaConfigResponse from(ConfigArca s) {
             return new ArcaConfigResponse(
                     s.isArcaEnabled(), s.isArcaModoPrueba(), s.getArcaCuit(), s.getArcaPuntoVenta(),
                     s.getArcaCondicionIva(),
@@ -246,7 +256,7 @@ public final class SiteSettingsDtos {
     ) {}
 
     public record CloudinaryConfigResponse(String cloudName, String uploadPreset) {
-        public static CloudinaryConfigResponse from(SiteSettings s) {
+        public static CloudinaryConfigResponse from(ConfigImagenes s) {
             return new CloudinaryConfigResponse(s.getCloudinaryCloudName(), s.getCloudinaryUploadPreset());
         }
     }
@@ -270,7 +280,7 @@ public final class SiteSettingsDtos {
             String host, Integer port, String username,
             boolean passwordSet, String fromEmail, String fromName
     ) {
-        public static MailConfigResponse from(SiteSettings s) {
+        public static MailConfigResponse from(ConfigMail s) {
             return new MailConfigResponse(
                     s.getSmtpHost(), s.getSmtpPort(), s.getSmtpUsername(),
                     s.getSmtpPassword() != null && !s.getSmtpPassword().isBlank(),

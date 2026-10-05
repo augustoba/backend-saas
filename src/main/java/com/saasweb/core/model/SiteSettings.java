@@ -18,34 +18,6 @@ public class SiteSettings {
     @Id
     private String id;
 
-    @Column(nullable = false)
-    private String storeName;
-
-    /** Número de WhatsApp en formato internacional sin +, espacios ni 15. */
-    @Column(nullable = false)
-    private String whatsappNumber;
-
-    @Column(length = 2000)
-    private String aboutText;
-
-    /** Usuario de Instagram, sin @. */
-    private String instagram;
-
-    private String facebookUrl;
-
-    /** Logo del negocio: URL o data URI. null = usar el logo por defecto (`logo.jpeg`). */
-    @Column(length = 5_000_000)
-    private String logoUrl;
-
-    /**
-     * Forma en la que se recorta el logo dondequiera que se muestre (header,
-     * pie de página, portada de Clásico): `"circle"` (por defecto),
-     * `"square"` o `"rectangle"`. Nullable a propósito — null se trata como
-     * `"circle"` (el único recorte que existía antes de este campo) en
-     * {@code SettingsResponse}, así ningún logo ya cargado cambia de golpe.
-     */
-    private String logoShape;
-
     /**
      * Theme visual del sitio (ver PLAN_SAAS.md Fase 6). Hoy sólo existe
      * `"default"` — el campo es la base para poder ofrecer más de una
@@ -63,16 +35,6 @@ public class SiteSettings {
      * (el único layout que existe hoy) en {@code SettingsResponse}.
      */
     private String layout;
-
-    /**
-     * Color de marca elegido libremente por el tenant (hex, ej. `"#e8432a"`),
-     * ver PLAN_SAAS.md Fase 10. Cuando no es null, el frontend deriva la
-     * rampa `--color-brand-50..700` a partir de este valor y la aplica en
-     * runtime, por encima del `[data-theme]` con nombre de `theme`. Null =
-     * seguir usando la paleta con nombre de siempre (cero cambio para los
-     * tenants existentes).
-     */
-    private String brandColor;
 
     /**
      * Colores independientes de {@code brandColor} (ver PLAN_SAAS.md Fase 10
@@ -98,10 +60,6 @@ public class SiteSettings {
      */
     @Column(length = 2000)
     private String whatsappClosing;
-
-    /** Dirección del local (para la opción "Retiro en el local" del checkout). */
-    @Column(length = 500)
-    private String storeAddress;
 
     /**
      * Texto de la página "Cómo comprar" (texto libre, se respeta el salto de
@@ -153,68 +111,12 @@ public class SiteSettings {
     // por `PAYMENTS_MANAGE` (el admin normal de la tienda, no sólo
     // superadmin) porque es SU cuenta, no una compartida.
 
-    /** Módulo del plan habilitado Y el tenant activó el checkout. */
-    @Column(nullable = false)
-    private boolean mpEnabled = false;
-
-    /** Access Token (de prueba o de producción) de la cuenta de Mercado Pago del tenant. Secreto real. */
-    @Column(length = 300)
-    private String mpAccessToken;
-
-    /** Public Key — no es secreta, se puede exponer al frontend si hiciera falta. */
-    @Column(length = 300)
-    private String mpPublicKey;
-
     // --- ARCA/AFIP (Fase 14) — factura electrónica real (CAE) ---
     // Mismo criterio que Mercado Pago: credenciales POR TENANT (cada tienda
     // factura con su propia CUIT/certificado), editable por PAYMENTS_MANAGE.
     // El certificado y la clave privada son secretos de verdad — igual que
     // `smtpPassword`/`mpAccessToken`, nunca se devuelven en ninguna
     // respuesta, sólo se pueden pisar (ver `ArcaConfigResponse`).
-
-    /** Módulo del plan habilitado Y el tenant activó la facturación. */
-    @Column(nullable = false)
-    private boolean arcaEnabled = false;
-
-    /** true = entorno de homologación (testing) de ARCA; false = producción. */
-    @Column(nullable = false)
-    private boolean arcaModoPrueba = true;
-
-    /** CUIT del tenant (11 dígitos, sin guiones) — el que factura. No es secreto. */
-    @Column(length = 20)
-    private String arcaCuit;
-
-    /** Punto de venta asignado en ARCA para facturación electrónica (WSFE). */
-    private Integer arcaPuntoVenta;
-
-    /**
-     * Condición frente al IVA — determina el tipo de comprobante por
-     * defecto (Monotributo/Exento → Factura C, sin discriminar IVA;
-     * Responsable Inscripto → Factura A/B, fuera de alcance todavía, ver
-     * PLAN_SAAS.md Fase 14).
-     */
-    @Column(length = 40)
-    private String arcaCondicionIva;
-
-    /**
-     * Certificado X.509 (.crt) que ARCA asoció al Access Token del WS, en PEM.
-     * Secreto real. `length` grande (no un VARCHAR chico) para que Hibernate
-     * lo mapee a MEDIUMTEXT — mismo patrón que {@code helpText}/{@code faqText}
-     * más abajo: dos VARCHAR(8000) en utf8mb4 ya sumaban ~64000 bytes
-     * contados "en fila" por MySQL al crear la tabla, y sumado al resto de
-     * `site_settings` superaba el límite de 65535 bytes por fila ("Row size
-     * too large") — la tabla no se podía crear desde cero en una base nueva.
-     */
-    @Column(length = 100_000)
-    private String arcaCertificadoPem;
-
-    /** Clave privada del certificado de arriba, en PEM. Secreto real — nunca sale de este campo. */
-    @Column(length = 100_000)
-    private String arcaClavePrivadaPem;
-
-    /** TICKET_INTERNO (no fiscal) | FACTURA_ARCA (real, con CAE) — qué emite el punto de venta por defecto. */
-    @Column(length = 20, nullable = false)
-    private String invoiceMode = "TICKET_INTERNO";
 
     /** true = mandar un mail diario cuando haya talles en stock bajo (ver LowStockAlertScheduler). */
     @Column(nullable = false)
@@ -229,97 +131,10 @@ public class SiteSettings {
     // endpoint público de settings porque cualquier sesión de admin las necesita
     // para poder subir fotos. No son secretas (unsigned upload preset).
 
-    @Column(length = 200)
-    private String cloudinaryCloudName;
-
-    @Column(length = 200)
-    private String cloudinaryUploadPreset;
-
-    public String getCloudinaryCloudName() {
-        return cloudinaryCloudName;
-    }
-
-    public void setCloudinaryCloudName(String cloudinaryCloudName) {
-        this.cloudinaryCloudName = cloudinaryCloudName;
-    }
-
-    public String getCloudinaryUploadPreset() {
-        return cloudinaryUploadPreset;
-    }
-
-    public void setCloudinaryUploadPreset(String cloudinaryUploadPreset) {
-        this.cloudinaryUploadPreset = cloudinaryUploadPreset;
-    }
-
     // --- SMTP (recuperación de cuenta por mail) ---
     // Editable solo por superadmin. A diferencia de Cloudinary, `smtpPassword` es
     // secreto de verdad (una API key de Brevo) — nunca se devuelve en ninguna
     // respuesta, sólo se puede pisar (ver CloudinaryConfigResponse vs. MailConfigResponse).
-
-    @Column(length = 300)
-    private String smtpHost;
-
-    private Integer smtpPort;
-
-    @Column(length = 300)
-    private String smtpUsername;
-
-    @Column(length = 500)
-    private String smtpPassword;
-
-    @Column(length = 300)
-    private String smtpFromEmail;
-
-    @Column(length = 200)
-    private String smtpFromName;
-
-    public String getSmtpHost() {
-        return smtpHost;
-    }
-
-    public void setSmtpHost(String smtpHost) {
-        this.smtpHost = smtpHost;
-    }
-
-    public Integer getSmtpPort() {
-        return smtpPort;
-    }
-
-    public void setSmtpPort(Integer smtpPort) {
-        this.smtpPort = smtpPort;
-    }
-
-    public String getSmtpUsername() {
-        return smtpUsername;
-    }
-
-    public void setSmtpUsername(String smtpUsername) {
-        this.smtpUsername = smtpUsername;
-    }
-
-    public String getSmtpPassword() {
-        return smtpPassword;
-    }
-
-    public void setSmtpPassword(String smtpPassword) {
-        this.smtpPassword = smtpPassword;
-    }
-
-    public String getSmtpFromEmail() {
-        return smtpFromEmail;
-    }
-
-    public void setSmtpFromEmail(String smtpFromEmail) {
-        this.smtpFromEmail = smtpFromEmail;
-    }
-
-    public String getSmtpFromName() {
-        return smtpFromName;
-    }
-
-    public void setSmtpFromName(String smtpFromName) {
-        this.smtpFromName = smtpFromName;
-    }
 
     public String getId() {
         return id;
@@ -327,62 +142,6 @@ public class SiteSettings {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getStoreName() {
-        return storeName;
-    }
-
-    public void setStoreName(String storeName) {
-        this.storeName = storeName;
-    }
-
-    public String getWhatsappNumber() {
-        return whatsappNumber;
-    }
-
-    public void setWhatsappNumber(String whatsappNumber) {
-        this.whatsappNumber = whatsappNumber;
-    }
-
-    public String getAboutText() {
-        return aboutText;
-    }
-
-    public void setAboutText(String aboutText) {
-        this.aboutText = aboutText;
-    }
-
-    public String getInstagram() {
-        return instagram;
-    }
-
-    public void setInstagram(String instagram) {
-        this.instagram = instagram;
-    }
-
-    public String getFacebookUrl() {
-        return facebookUrl;
-    }
-
-    public void setFacebookUrl(String facebookUrl) {
-        this.facebookUrl = facebookUrl;
-    }
-
-    public String getLogoUrl() {
-        return logoUrl;
-    }
-
-    public void setLogoUrl(String logoUrl) {
-        this.logoUrl = logoUrl;
-    }
-
-    public String getLogoShape() {
-        return logoShape;
-    }
-
-    public void setLogoShape(String logoShape) {
-        this.logoShape = logoShape;
     }
 
     public String getTheme() {
@@ -399,14 +158,6 @@ public class SiteSettings {
 
     public void setLayout(String layout) {
         this.layout = layout;
-    }
-
-    public String getBrandColor() {
-        return brandColor;
-    }
-
-    public void setBrandColor(String brandColor) {
-        this.brandColor = brandColor;
     }
 
     public String getHeaderColor() {
@@ -455,14 +206,6 @@ public class SiteSettings {
 
     public void setWhatsappClosing(String whatsappClosing) {
         this.whatsappClosing = whatsappClosing;
-    }
-
-    public String getStoreAddress() {
-        return storeAddress;
-    }
-
-    public void setStoreAddress(String storeAddress) {
-        this.storeAddress = storeAddress;
     }
 
     public String getHelpText() {
@@ -543,94 +286,6 @@ public class SiteSettings {
 
     public void setPaymentCashEnabled(boolean paymentCashEnabled) {
         this.paymentCashEnabled = paymentCashEnabled;
-    }
-
-    public boolean isMpEnabled() {
-        return mpEnabled;
-    }
-
-    public void setMpEnabled(boolean mpEnabled) {
-        this.mpEnabled = mpEnabled;
-    }
-
-    public String getMpAccessToken() {
-        return mpAccessToken;
-    }
-
-    public void setMpAccessToken(String mpAccessToken) {
-        this.mpAccessToken = mpAccessToken;
-    }
-
-    public String getMpPublicKey() {
-        return mpPublicKey;
-    }
-
-    public void setMpPublicKey(String mpPublicKey) {
-        this.mpPublicKey = mpPublicKey;
-    }
-
-    public boolean isArcaEnabled() {
-        return arcaEnabled;
-    }
-
-    public void setArcaEnabled(boolean arcaEnabled) {
-        this.arcaEnabled = arcaEnabled;
-    }
-
-    public boolean isArcaModoPrueba() {
-        return arcaModoPrueba;
-    }
-
-    public void setArcaModoPrueba(boolean arcaModoPrueba) {
-        this.arcaModoPrueba = arcaModoPrueba;
-    }
-
-    public String getArcaCuit() {
-        return arcaCuit;
-    }
-
-    public void setArcaCuit(String arcaCuit) {
-        this.arcaCuit = arcaCuit;
-    }
-
-    public Integer getArcaPuntoVenta() {
-        return arcaPuntoVenta;
-    }
-
-    public void setArcaPuntoVenta(Integer arcaPuntoVenta) {
-        this.arcaPuntoVenta = arcaPuntoVenta;
-    }
-
-    public String getArcaCondicionIva() {
-        return arcaCondicionIva;
-    }
-
-    public void setArcaCondicionIva(String arcaCondicionIva) {
-        this.arcaCondicionIva = arcaCondicionIva;
-    }
-
-    public String getArcaCertificadoPem() {
-        return arcaCertificadoPem;
-    }
-
-    public void setArcaCertificadoPem(String arcaCertificadoPem) {
-        this.arcaCertificadoPem = arcaCertificadoPem;
-    }
-
-    public String getArcaClavePrivadaPem() {
-        return arcaClavePrivadaPem;
-    }
-
-    public void setArcaClavePrivadaPem(String arcaClavePrivadaPem) {
-        this.arcaClavePrivadaPem = arcaClavePrivadaPem;
-    }
-
-    public String getInvoiceMode() {
-        return invoiceMode;
-    }
-
-    public void setInvoiceMode(String invoiceMode) {
-        this.invoiceMode = invoiceMode;
     }
 
     public boolean isLowStockAlertEnabled() {

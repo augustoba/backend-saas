@@ -25,8 +25,8 @@ import com.saasweb.core.service.MercadoPagoService.PreferenceItem;
 import com.saasweb.core.service.MercadoPagoService.PreferenceResult;
 import com.saasweb.core.service.ArcaInvoiceService;
 import com.saasweb.core.product.ProductService;
-import com.saasweb.core.model.SiteSettings;
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.model.ConfigArca;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.config.AppProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class OrderService {
     private final DiscountService discountService;
     private final CouponService couponService;
     private final AdminUserRepository adminUsers;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
     private final MercadoPagoService mercadoPagoService;
     private final AppProperties appProperties;
     private final OrderMailService orderMailService;
@@ -67,7 +67,7 @@ public class OrderService {
     public OrderService(OrderRepository repo, ProductRepository productRepo,
                         ProductService productService, DiscountService discountService,
                         CouponService couponService, AdminUserRepository adminUsers,
-                        SiteSettingsService siteSettingsService, MercadoPagoService mercadoPagoService,
+                        ConfiguracionService configuracion, MercadoPagoService mercadoPagoService,
                         AppProperties appProperties, OrderMailService orderMailService,
                         ArcaInvoiceService arcaInvoiceService, com.saasweb.core.service.InvoiceMailService invoiceMailService,
                         DominioService dominioService) {
@@ -79,7 +79,7 @@ public class OrderService {
         this.discountService = discountService;
         this.couponService = couponService;
         this.adminUsers = adminUsers;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
         this.mercadoPagoService = mercadoPagoService;
         this.appProperties = appProperties;
         this.arcaInvoiceService = arcaInvoiceService;
@@ -306,7 +306,7 @@ public class OrderService {
      * al caller para que el checkout le avise al cliente que reintente.
      */
     private void startMercadoPagoCheckout(Order order) {
-        var settings = siteSettingsService.get();
+        var settings = configuracion.mp();
         String accessToken = settings.getMpAccessToken();
         if (accessToken == null || accessToken.isBlank()) {
             throw new BadRequestException("Esta tienda todavía no configuró Mercado Pago.");
@@ -481,7 +481,7 @@ public class OrderService {
      * `Order.invoiceError`, `ArcaInvoiceService`).
      */
     private void applyInvoicing(Order order) {
-        SiteSettings settings = siteSettingsService.get();
+        ConfigArca settings = configuracion.arca();
         if (!"FACTURA_ARCA".equals(settings.getInvoiceMode()) || !arcaInvoiceService.isAvailable()) {
             order.setInvoiceType("TICKET_INTERNO");
             return;
@@ -556,7 +556,7 @@ public class OrderService {
         if (!arcaInvoiceService.isAvailable()) {
             throw new BadRequestException("Esta tienda todavía no configuró la facturación con ARCA.");
         }
-        if (!"FACTURA_ARCA".equals(siteSettingsService.get().getInvoiceMode())) {
+        if (!"FACTURA_ARCA".equals(configuracion.arca().getInvoiceMode())) {
             throw new BadRequestException("Activá \"Factura C real, con CAE de ARCA\" en Configuración > Facturación (ARCA) para poder facturar.");
         }
         applyInvoicing(order);

@@ -54,6 +54,7 @@ public class TenantDeletionService {
 
     private final TenantRepository tenantRepo;
     private final DominioRepository dominioRepo;
+    private final ConfiguracionService configuracion;
     private final SiteSettingsRepository siteSettingsRepo;
     private final MarketingConfigRepository marketingConfigRepo;
     private final OrderRepository orderRepo;
@@ -83,7 +84,9 @@ public class TenantDeletionService {
             ShiftRepository shiftRepo, SupplierRepository supplierRepo, SizeScaleRepository sizeScaleRepo,
             AdminUserRepository adminUserRepo, RoleRepository roleRepo, ExpenseRepository expenseRepo,
             StockMovementRepository stockMovementRepo, CreditNoteRepository creditNoteRepo,
-            ExpenseBudgetRepository expenseBudgetRepo, DominioRepository dominioRepo) {
+            ExpenseBudgetRepository expenseBudgetRepo, DominioRepository dominioRepo,
+            ConfiguracionService configuracion) {
+        this.configuracion = configuracion;
         this.dominioRepo = dominioRepo;
         this.tenantRepo = tenantRepo;
         this.siteSettingsRepo = siteSettingsRepo;
@@ -144,6 +147,7 @@ public class TenantDeletionService {
         roleRepo.deleteAllByTenantId(tenantId);
 
         if (siteSettingsRepo.existsById(tenantId)) siteSettingsRepo.deleteById(tenantId);
+        configuracion.borrarDe(tenantId);
         if (marketingConfigRepo.existsById(tenantId)) marketingConfigRepo.deleteById(tenantId);
 
         dominioRepo.deleteByTenantId(tenantId);

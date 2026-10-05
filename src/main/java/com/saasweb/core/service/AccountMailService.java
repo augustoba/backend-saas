@@ -8,17 +8,17 @@ import org.springframework.stereotype.Service;
 public class AccountMailService {
 
     private final PlatformMailSettingsService mailSettingsService;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
 
     public AccountMailService(PlatformMailSettingsService mailSettingsService,
-                               SiteSettingsService siteSettingsService) {
+                               ConfiguracionService configuracion) {
         this.mailSettingsService = mailSettingsService;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
     }
 
     /** {@code link} incluye el token de un solo uso — vence a la hora, ver {@code AuthService}. */
     public void sendPasswordResetLink(String toEmail, String nombre, String link) {
-        String storeName = siteSettingsService.get().getStoreName();
+        String storeName = configuracion.identidad().getStoreName();
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailSettingsService.get().getFromAddress());

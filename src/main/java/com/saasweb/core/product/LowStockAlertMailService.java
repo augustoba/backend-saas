@@ -1,7 +1,7 @@
 package com.saasweb.core.product;
 
 import com.saasweb.core.dashboard.DashboardDtos.LowStockItem;
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.model.PlatformMailSettings;
 import com.saasweb.core.service.PlatformMailSettingsService;
 import jakarta.mail.internet.MimeMessage;
@@ -16,17 +16,17 @@ import java.util.List;
 public class LowStockAlertMailService {
 
     private final PlatformMailSettingsService mailSettingsService;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
 
     public LowStockAlertMailService(PlatformMailSettingsService mailSettingsService,
-                                    SiteSettingsService siteSettingsService) {
+                                    ConfiguracionService configuracion) {
         this.mailSettingsService = mailSettingsService;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
     }
 
     public void send(String toEmail, List<LowStockItem> items) {
         PlatformMailSettings mailCfg = mailSettingsService.get();
-        String storeName = siteSettingsService.get().getStoreName();
+        String storeName = configuracion.identidad().getStoreName();
 
         StringBuilder rows = new StringBuilder();
         for (LowStockItem it : items) {

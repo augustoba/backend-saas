@@ -1,6 +1,6 @@
 package com.saasweb.core.order;
 
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.service.PlatformMailSettingsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,11 +23,11 @@ public class OrderMailService {
     private static final Logger log = LoggerFactory.getLogger(OrderMailService.class);
 
     private final PlatformMailSettingsService mailSettingsService;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
 
-    public OrderMailService(PlatformMailSettingsService mailSettingsService, SiteSettingsService siteSettingsService) {
+    public OrderMailService(PlatformMailSettingsService mailSettingsService, ConfiguracionService configuracion) {
         this.mailSettingsService = mailSettingsService;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
     }
 
     /**
@@ -38,7 +38,7 @@ public class OrderMailService {
     public void sendOrderConfirmation(Order order) {
         if (order.getCustomerEmail() == null || order.getCustomerEmail().isBlank()) return;
 
-        String storeName = siteSettingsService.get().getStoreName();
+        String storeName = configuracion.identidad().getStoreName();
         StringBuilder body = new StringBuilder();
         body.append("¡Hola ").append(order.getCustomerName()).append("!\n\n");
         body.append("Tu pago se acreditó y tu pedido en ").append(storeName).append(" quedó confirmado.\n\n");

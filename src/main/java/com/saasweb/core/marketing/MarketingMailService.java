@@ -1,7 +1,7 @@
 package com.saasweb.core.marketing;
 
 import com.saasweb.core.marketing.MarketingConfig;
-import com.saasweb.core.service.SiteSettingsService;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.model.PlatformMailSettings;
 import com.saasweb.core.service.PlatformMailSettingsService;
 import jakarta.mail.internet.MimeMessage;
@@ -40,17 +40,17 @@ public class MarketingMailService {
                     + "{tienda}";
 
     private final PlatformMailSettingsService mailSettingsService;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
 
     public MarketingMailService(PlatformMailSettingsService mailSettingsService,
-                                 SiteSettingsService siteSettingsService) {
+                                 ConfiguracionService configuracion) {
         this.mailSettingsService = mailSettingsService;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
     }
 
     public void sendCoupon(String toEmail, MarketingConfig campaignCfg, String couponCode, LocalDate expiresAt) {
         PlatformMailSettings mailCfg = mailSettingsService.get();
-        String storeName = siteSettingsService.get().getStoreName();
+        String storeName = configuracion.identidad().getStoreName();
 
         String subjectTemplate = campaignCfg.getEmailSubject() != null && !campaignCfg.getEmailSubject().isBlank()
                 ? campaignCfg.getEmailSubject() : DEFAULT_SUBJECT;

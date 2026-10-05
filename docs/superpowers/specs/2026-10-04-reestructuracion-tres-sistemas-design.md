@@ -217,7 +217,19 @@ actualiza esta sección.
       (nombre, apellido, DNI, email, contraseña) y crea ese usuario con el rol
       "Administrador" de la tienda. Entra por el dominio de SU tienda; el mismo DNI
       no existe en otra. (Falta el paso en el asistente del front: va con el panel.)
-- [ ] Identidad + config ARCA/MP/mail/imágenes (servicio de imágenes intercambiable)
+- [x] **1e** Identidad y configuraciones del núcleo (V5): `core_identidad`,
+      `core_config_arca`, `core_config_mp`, `core_config_mail`,
+      `core_config_imagenes` (una fila por tienda, datos copiados desde
+      `site_settings` y columnas borradas de ahí). `ConfiguracionService` las
+      maneja; ARCA, Mercado Pago, mails y PDFs leen de ahí. En `site_settings`
+      queda sólo lo de la tienda online (diseño, colores, medios de pago manuales,
+      textos, alerta de stock): pasa a `ec_config_tienda` en la Etapa 2.
+      Verificado: las 7 respuestas de settings (pública, MP, ARCA, Cloudinary,
+      mail, alertas, y la de otra tienda) quedaron **byte por byte idénticas**
+      antes y después de la migración; editar la identidad escribe en
+      `core_identidad` y los textos de la tienda en `site_settings`.
+- [ ] Servicio de imágenes intercambiable (hoy el front sube directo a Cloudinary
+      con el preset; falta la interfaz del núcleo para poder pasar a R2)
 - [ ] `core_comprobante` + `core_cobro_mp` con origen + evento de cobro
 - [ ] Front: login, marco del panel, pantallas del núcleo, superadmin
 - [ ] Verificado: el superadmin crea un tenant de cada sistema y cada uno ve su menú
@@ -252,4 +264,5 @@ actualiza esta sección.
 | 2026-10-04 | 1a: núcleo reordenado por capa | back `7b41fa7` |
 | 2026-10-04 | 1b: sistema del tenant, dominios propios, resolución por Host, enums como varchar | back `5786850` |
 | 2026-10-04 | 1c: planes y permisos por sistema, roles por defecto al dar de alta | back `8259da5` |
-| 2026-10-04 | 1d: admin inicial en el alta de tienda | back (ver git log) |
+| 2026-10-04 | 1d: admin inicial en el alta de tienda | back `ab9d9d9` |
+| 2026-10-04 | 1e: identidad y configuraciones del núcleo fuera de site_settings | back (ver git log) |

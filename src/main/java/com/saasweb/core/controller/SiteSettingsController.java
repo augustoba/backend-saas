@@ -19,6 +19,7 @@ import com.saasweb.core.dto.SiteSettingsDtos.SettingsResponse;
 import com.saasweb.core.service.SiteSettingsService;
 import com.saasweb.core.model.Modules;
 import com.saasweb.core.service.PlanService;
+import com.saasweb.core.service.ConfiguracionService;
 import com.saasweb.core.service.TenantService;
 import com.saasweb.core.service.ArcaInvoiceService;
 import jakarta.validation.Valid;
@@ -31,10 +32,13 @@ public class SiteSettingsController {
     private final SiteSettingsService service;
     private final PlanService planService;
     private final TenantService tenantService;
+    private final ConfiguracionService configuracion;
     private final ArcaInvoiceService arcaInvoiceService;
 
     public SiteSettingsController(SiteSettingsService service, PlanService planService,
-                                   ArcaInvoiceService arcaInvoiceService, TenantService tenantService) {
+                                   ArcaInvoiceService arcaInvoiceService, TenantService tenantService,
+                                   ConfiguracionService configuracion) {
+        this.configuracion = configuracion;
         this.tenantService = tenantService;
         this.service = service;
         this.planService = planService;
@@ -48,16 +52,15 @@ public class SiteSettingsController {
     }
 
     /** true sólo si el plan lo habilita Y el tenant activó el checkout Y ya cargó su Access Token. */
-    private boolean mercadoPagoAvailable(SiteSettings s) {
+    private boolean mercadoPagoAvailable() {
         var plan = planService.getCurrent();
-        boolean moduleOn = plan != null && plan.hasModule(Modules.MERCADOPAGO);
-        return moduleOn && s.isMpEnabled() && s.getMpAccessToken() != null && !s.getMpAccessToken().isBlank();
+        return plan != null && plan.hasModule(Modules.MERCADOPAGO) && configuracion.mp().listo();
     }
 
     private SettingsResponse toResponse(SiteSettings s) {
-        return SettingsResponse.from(s, socialShareEnabled(), mercadoPagoAvailable(s),
-                tenantService.sistemaDe(TenantContext.requireTenantId()),
-                arcaInvoiceService.isAvailable(), s.getInvoiceMode());
+        return SettingsResponse.from(s, configuracion.identidad(), configuracion.imagenes(), configuracion.arca(),
+                socialShareEnabled(), mercadoPagoAvailable(),
+                tenantService.sistemaDe(TenantContext.requireTenantId()), arcaInvoiceService.isAvailable());
     }
 
     /** Público: datos del local para el header, footer y el link de WhatsApp. */
@@ -101,13 +104,13 @@ public class SiteSettingsController {
     @GetMapping("/api/admin/settings/mercadopago")
     @PreAuthorize("hasAuthority('PAYMENTS_MANAGE')")
     public MercadoPagoConfigResponse mercadoPagoConfig() {
-        return MercadoPagoConfigResponse.from(service.get());
+        return MercadoPagoConfigResponse.from(configuracion.mp());
     }
 
     @PutMapping("/api/admin/settings/mercadopago")
     @PreAuthorize("hasAuthority('PAYMENTS_MANAGE')")
     public MercadoPagoConfigResponse updateMercadoPagoConfig(@Valid @RequestBody MercadoPagoConfigRequest req) {
-        return MercadoPagoConfigResponse.from(service.updateMercadoPago(req));
+        return MercadoPagoConfigResponse.from(configuracion.actualizarMp(req));
     }
 
     /**
@@ -118,13 +121,13 @@ public class SiteSettingsController {
     @GetMapping("/api/admin/settings/arca")
     @PreAuthorize("hasAuthority('PAYMENTS_MANAGE')")
     public ArcaConfigResponse arcaConfig() {
-        return ArcaConfigResponse.from(service.get());
+        return ArcaConfigResponse.from(configuracion.arca());
     }
 
     @PutMapping("/api/admin/settings/arca")
     @PreAuthorize("hasAuthority('PAYMENTS_MANAGE')")
     public ArcaConfigResponse updateArcaConfig(@Valid @RequestBody ArcaConfigRequest req) {
-        return ArcaConfigResponse.from(service.updateArca(req));
+        return ArcaConfigResponse.from(configuracion.actualizarArca(req));
     }
 
     /** Alerta de stock bajo por mail — la edita el admin normal de la tienda (ítem 10). */
@@ -149,13 +152,13 @@ public class SiteSettingsController {
     @GetMapping("/api/admin/settings/cloudinary")
     @PreAuthorize("hasAuthority('SUPERADMIN')")
     public CloudinaryConfigResponse cloudinaryConfig() {
-        return CloudinaryConfigResponse.from(service.get());
+        return CloudinaryConfigResponse.from(configuracion.imagenes());
     }
 
     @PutMapping("/api/admin/settings/cloudinary")
     @PreAuthorize("hasAuthority('SUPERADMIN')")
     public CloudinaryConfigResponse updateCloudinaryConfig(@Valid @RequestBody CloudinaryConfigRequest req) {
-        return CloudinaryConfigResponse.from(service.updateCloudinary(req.cloudName(), req.uploadPreset()));
+        return CloudinaryConfigResponse.from(configuracion.actualizarImagenes(req.cloudName(), req.uploadPreset()));
     }
 
     /**
@@ -166,14 +169,14 @@ public class SiteSettingsController {
     @GetMapping("/api/admin/settings/mail")
     @PreAuthorize("hasAuthority('SUPERADMIN')")
     public MailConfigResponse mailConfig() {
-        return MailConfigResponse.from(service.get());
+        return MailConfigResponse.from(configuracion.mail());
     }
 
     @PutMapping("/api/admin/settings/mail")
     @PreAuthorize("hasAuthority('SUPERADMIN')")
     public MailConfigResponse updateMailConfig(@Valid @RequestBody MailConfigRequest req) {
         return MailConfigResponse.from(
-                service.updateMailConfig(req.host(), req.port(), req.username(), req.password(),
+                configuracion.actualizarMail(req.host(), req.port(), req.username(), req.password(),
                         req.fromEmail(), req.fromName()));
     }
 }

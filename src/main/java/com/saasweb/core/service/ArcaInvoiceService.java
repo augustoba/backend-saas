@@ -8,7 +8,7 @@ import com.saasweb.core.service.ArcaWsfeClient.FacturaRequest;
 import com.saasweb.core.service.ArcaWsfeClient.FacturaResult;
 import com.saasweb.core.service.ArcaWsfeClient.IvaGroup;
 import com.saasweb.core.model.Modules;
-import com.saasweb.core.model.SiteSettings;
+import com.saasweb.core.model.ConfigArca;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -51,15 +51,15 @@ public class ArcaInvoiceService {
 
     private final ArcaWsaaClient wsaaClient;
     private final ArcaWsfeClient wsfeClient;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
     private final PlanService planService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public ArcaInvoiceService(ArcaWsaaClient wsaaClient, ArcaWsfeClient wsfeClient,
-                               SiteSettingsService siteSettingsService, PlanService planService) {
+                               ConfiguracionService configuracion, PlanService planService) {
         this.wsaaClient = wsaaClient;
         this.wsfeClient = wsfeClient;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
         this.planService = planService;
     }
 
@@ -84,7 +84,7 @@ public class ArcaInvoiceService {
     public boolean isAvailable() {
         var plan = planService.getCurrent();
         if (plan == null || !plan.hasModule(Modules.ARCA_INVOICING)) return false;
-        SiteSettings s = siteSettingsService.get();
+        ConfigArca s = configuracion.arca();
         return s.isArcaEnabled()
                 && notBlank(s.getArcaCuit())
                 && notBlank(s.getArcaCertificadoPem())
@@ -104,7 +104,7 @@ public class ArcaInvoiceService {
         if (!isAvailable()) {
             throw new BadRequestException("Esta tienda todavía no configuró la facturación con ARCA.");
         }
-        SiteSettings s = siteSettingsService.get();
+        ConfigArca s = configuracion.arca();
         int cbteTipo = cbteTipoFor(s, buyerCuit);
         String tipoLabel = invoiceTypeLabel(cbteTipo);
         BigDecimal importeTotal = lines.stream().map(InvoiceLine::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -168,7 +168,7 @@ public class ArcaInvoiceService {
         int origCbteTipo = cbteTipoForInvoiceType(originalInvoiceType);
         int ncCbteTipo = ncTipoFor(origCbteTipo);
         String tipoLabel = "NC_" + originalInvoiceType.substring(originalInvoiceType.length() - 1);
-        SiteSettings s = siteSettingsService.get();
+        ConfigArca s = configuracion.arca();
         try {
             Ticket ticket = wsaaClient.getTicket(
                     tenantId + (s.isArcaModoPrueba() ? ":homo" : ":prod"),
@@ -236,7 +236,7 @@ public class ArcaInvoiceService {
     }
 
     /** Monotributo/Exento → C (nunca discrimina IVA). Responsable Inscripto → A si hay CUIT del comprador, si no B. */
-    private int cbteTipoFor(SiteSettings s, String buyerCuit) {
+    private int cbteTipoFor(ConfigArca s, String buyerCuit) {
         if (!"RESPONSABLE_INSCRIPTO".equals(s.getArcaCondicionIva())) {
             return ArcaWsfeClient.CBTE_TIPO_FACTURA_C;
         }

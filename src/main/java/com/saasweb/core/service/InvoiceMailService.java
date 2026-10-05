@@ -1,7 +1,7 @@
 package com.saasweb.core.service;
 
 import com.saasweb.core.order.Order;
-import com.saasweb.core.model.SiteSettings;
+import com.saasweb.core.model.Identidad;
 import com.saasweb.core.model.PlatformMailSettings;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.core.io.ByteArrayResource;
@@ -19,19 +19,19 @@ import org.springframework.stereotype.Service;
 public class InvoiceMailService {
 
     private final PlatformMailSettingsService mailSettingsService;
-    private final SiteSettingsService siteSettingsService;
+    private final ConfiguracionService configuracion;
     private final InvoicePdfService pdfService;
 
-    public InvoiceMailService(PlatformMailSettingsService mailSettingsService, SiteSettingsService siteSettingsService,
+    public InvoiceMailService(PlatformMailSettingsService mailSettingsService, ConfiguracionService configuracion,
                               InvoicePdfService pdfService) {
         this.mailSettingsService = mailSettingsService;
-        this.siteSettingsService = siteSettingsService;
+        this.configuracion = configuracion;
         this.pdfService = pdfService;
     }
 
     public void send(Order order) {
         if (order.getCustomerEmail() == null || order.getCustomerEmail().isBlank()) return;
-        SiteSettings settings = siteSettingsService.get();
+        Identidad settings = configuracion.identidad();
         byte[] pdf = pdfService.generate(order, settings);
 
         try {
